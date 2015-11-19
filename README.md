@@ -29,7 +29,7 @@ Matthew Dobrowsky: human machine interface
 
 `rosrun baxter_cartesian_moves baxter_cart_move_as`
 
-6) Visualize the axis of yale gripper in rviz:
+6) Publish yale gripper transformation (data inside needs to be refined):
 
 `roslaunch cwru_baxter_launch yale_gripper_xform.launch`
 
@@ -49,6 +49,6 @@ Matthew Dobrowsky: human machine interface
 
 `rosrun `
 
-11) 2 to 10 is just for debug, alternative, skip 2 to 10 and run our launch file
+11) 2 to 10 is just for debug, alternative, skip 2 to 10 and run our launch file:
 
 `roslaunch `
