@@ -26,7 +26,7 @@ Matthew Dobrowsky: human machine interface
 
 2) Make sure there is no compile error before making a pull request.
 
-3) Write comment as much as you can.
+3) Write comments in your code as much as you can.
 
 ## Test instruction
 1) Make sure that Baxter's power, e-stop, and network cable are all plugged in and ready to go.
