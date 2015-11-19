@@ -1,4 +1,4 @@
-# ps9_gripper
+# ps9_gripper_control
 
 Your description goes here
 

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>ps9_gripper</name>
+  <name>ps9_gripper_control</name>
   <version>0.0.0</version>
-  <description>The ps9_gripper package</description>
+  <description>The ps9_gripper_control package</description>
   
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
