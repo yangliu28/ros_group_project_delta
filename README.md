@@ -11,6 +11,20 @@ Yang Liu: arm motion planning/execution
 Matthew Dobrowsky: human machine interface
 
 ## What's inside
+*ps9_main* package contains the main program of controlling the work flow of baxter. Libraries from other packages will be used.
+
+*ps9_arm_motion* package contains a library of arm motion planning and execution of baxter's right arm.
+
+*ps9_gripper_control* package contains a library of controlling the yale gripper.
+
+*ps9_hmi* package contains a library of how to let human interact with blocks and baxter.
+
+*ps9_pcl* package contains a library of point cloud processing, retrive information of color, position and orientation.
+
+## Tips for team work
+1) In the README.md of each package, give a demo usage of your library, includes the #include, class instantiation and important member function. Or, just give an standalone test program for your library.
+
+2) Make sure there is no compile error before making a pull request.
 
 ## Test instruction
 1) Make sure that Baxter's power, e-stop, and network cable are all plugged in and ready to go.
@@ -47,7 +61,7 @@ Matthew Dobrowsky: human machine interface
 
 10) If all the above goes right, start our main program:
 
-`rosrun `
+`rosrun ps9_main `
 
 11) 2 to 10 is just for debug, alternative, skip 2 to 10 and run our launch file:
 
