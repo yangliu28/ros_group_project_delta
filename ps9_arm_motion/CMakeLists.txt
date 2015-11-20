@@ -13,11 +13,15 @@ catkin_simple()
 
 # Libraries
 # cs_add_library(my_lib src/my_lib.cpp)   
+cs_add_library(ps9_arm_motion_commander_lib src/ps9_arm_motion_commander_lib.cpp)
 
 # Executables
 # cs_add_executable(example src/example.cpp)
 # target_link_library(example my_lib)
 
+cs_add_executable(ps9_lib_usage src/ps9_lib_usage.cpp)
+
+target_link_libraries(ps9_lib_usage ps9_arm_motion_commander_lib ${catkin_LIBRARIES})
+
 cs_install()
 cs_export()
-    
