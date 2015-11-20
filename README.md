@@ -17,9 +17,7 @@ Matthew Dobrowsky: human machine interface
 
 *ps9_gripper_control* package contains a library of controlling the yale gripper.
 
-*ps9_hmi* package contains a library of how to let human interact with blocks and baxter.
-
-*ps9_pcl* package contains a library of point cloud processing, retrive information of color, position and orientation.
+*ps9_pcl_hmi* package contains a library of point cloud processing and human machine interface design, retrive information of color, position and orientation.
 
 ## Tips for team work
 1) In the README.md of each package, give a demo usage of your library, includes the #include, class instantiation and important member function. Or, just give an standalone test program for your library.
