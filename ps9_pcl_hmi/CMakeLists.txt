@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ps9_hmi)
+project(ps9_pcl_hmi)
 
 find_package(catkin_simple REQUIRED)
 
