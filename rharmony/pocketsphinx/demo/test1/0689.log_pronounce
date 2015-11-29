@@ -1,0 +1,9 @@
+ACTOR - Main 
+BACKWARD - Main 
+FORWARD - Main 
+LEFT - Main 
+pronounce: verbosity is 1
+LUMEI - By LtoS rules
+MOVE - Main 
+RIGHT - Main 
+

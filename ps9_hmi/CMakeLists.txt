@@ -7,7 +7,7 @@ project(ps9_hmi)
 find_package(catkin REQUIRED COMPONENTS
   catkin_simple
   roscpp
-  std_msg
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
