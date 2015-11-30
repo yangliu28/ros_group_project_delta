@@ -24,12 +24,6 @@ std_blue = (255, 255, 255);
 std_green = (255, 255, 255);
 std_black = (255, 255, 255);
 
-int find_color(){
-    ros::int(argc, argv, "find_color");
-    ros::NodeHandle nh;
-
-}
-
 int block_detect() {
     ros::init(argc, argv, "cwru_pcl_utils_color_test"); //node name
     ros::NodeHandle nh;
