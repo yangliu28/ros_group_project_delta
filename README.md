@@ -33,7 +33,7 @@ Matthew Dobrowsky: human machine interface
 
 2) For every terminal opened, run `baxter_master` to make sure we are talking to the roscore in baxter.
 
-3) For arm motion:
+3) For **arm motion**:
 
 Enable the robot to respond to motion command:
 
@@ -47,7 +47,7 @@ Start the baxter cartesian move action server:
 
 `rosrun baxter_cartesian_moves baxter_cart_move_as`
 
-4) For yale gripper
+4) For **yale gripper**
 
 Gripper visualization in rviz:
 
@@ -57,7 +57,7 @@ Start the ROS motor driver:
 
 `rosrun baxter_gripper dynamixel_motor_node`
 
-5) For kinect sensor (our own launch file with sensor calibration data):
+5) For **kinect sensor** (our own launch file with sensor calibration data):
 
 `roslaunch ps9_pcl kinect_.launch`
 
