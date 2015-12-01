@@ -1,0 +1,260 @@
+//block_detection.cpp
+//by Tao and Matt
+
+#include <ps9_pcl/block_detection.h>
+#include <cwru_pcl_utils/cwru_pcl_utils.h>
+
+#include <ros/ros.h>
+#include <math.h>
+#include <Eigen/Eigen>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <Eigen/Eigenvalues>
+#include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
+
+
+using namespace std;
+
+///let's use RGB first.
+/*Eigen::Vector3f std_red;
+Eigen::Vector3f std_yellow;
+Eigen::Vector3f std_blue;
+Eigen::Vector3f std_green;
+Eigen::Vector3f std_black;
+
+///determin the stand color.
+std_white = (255, 255, 255);
+std_red = (255, 0, 0);
+std_yellow = (255, 255, 0);
+std_blue = (0, 0, 255);
+std_green = (0, 255, 0);
+std_black = (0, 0, 0);*/
+
+
+
+void Block_detection::update_kinect_points() 
+{
+    reset_got_kinect_cloud(); // turn on the camera
+    ROS_INFO("begin to update kinect points");
+    while (!got_kinect_cloud()) {
+        ROS_INFO("did not receive pointcloud");
+        ros::spinOnce();
+        ros::Duration(1.0).sleep();
+    }
+    ROS_INFO("got a pointcloud.");
+
+
+    tf::StampedTransform tf_sensor_frame_to_torso_frame; //use this to transform sensor frame to torso frame
+    tf::TransformListener tf_listener; //start a transform listener
+
+    // let's warm up the tf_listener, to make sure it get's all the transforms it needs to avoid crashing:
+    bool tferr = true;
+    ROS_INFO("waiting for tf between kinect_pc_frame and torso...");
+    while (tferr) {
+        tferr = false;
+        try {
+            // The direction of the transform returned will be from the target_frame to the source_frame. 
+            // Which if applied to data, will transform data in the source_frame into the target_frame. See tf/CoordinateFrameConventions#Transform_Direction
+            tf_listener.lookupTransform("torso", "kinect_pc_frame", ros::Time(0), tf_sensor_frame_to_torso_frame);
+        } catch (tf::TransformException &exception) {
+            ROS_ERROR("%s", exception.what());
+            tferr = true;
+            ros::Duration(0.5).sleep(); // sleep for half a second
+            ros::spinOnce();
+        }
+    }
+    ROS_INFO("tf is good"); //  tf-listener found a complete chain from sensor to world; ready to roll
+
+    Eigen::Affine3f A_sensor_wrt_torso;
+    A_sensor_wrt_torso = cwru_pcl_utils.transformTFToEigen(tf_sensor_frame_to_torso_frame);
+
+    //ROS_INFO_STREAM("Affine"<<endl<<A_sensor_wrt_torso.matrix()); // check Affine
+
+/*  PointCloud<pcl::PointXYZ> kinect_points;
+    transform_kinect_cloud(A_sensor_wrt_torso);
+    get_transformed_kinect_points(kinect_points);
+    pclKinect_clr_ptr_->header = kinect_points.header;
+    pclKinect_clr_ptr_->is_dense = kinect_points.is_dense;
+    pclKinect_clr_ptr_->width = kinect_points.width;
+    pclKinect_clr_ptr_->height = kinect_points.height;
+    if (pcl::io::loadPCDFile<pcl::PointXYZRGB> ("kinect_clr_snapshot.pcd", *pclKinect_clr_ptr_) == -1) //* load the file
+    {
+        PCL_ERROR ("Couldn't read file kinect_clr_snapshot.pcd \n");
+    }
+*/
+ //   cwru_pcl_utils.get_kinect_clr_pts(*pclKinect_clr_ptr_);
+ //   ROS_INFO("Load color kinect points");
+
+    transform_clr_kinect_cloud(A_sensor_wrt_torso);
+    ROS_INFO("transformed color kinect points");
+    set_got_kinect_cloud(); // turn off the camera
+}
+
+
+
+
+
+int Block_detection::find_color(Vector3f color_wanted) {
+    update_kinect_points();
+
+    float Color_R_wanted;
+    float Color_G_wanted;
+    float Color_B_wanted;
+
+    Color_R_wanted = color_wanted[0];
+    Color_G_wanted = color_wanted[1];
+    Color_B_wanted = color_wanted[2];
+
+    int npts = transformed_pclKinect_clr_ptr_->points.size();
+    vector<int> index;
+    Eigen::Vector3f pt;
+    vector<double> color_err_RGB;
+    double color_err;
+    color_err = 255;
+    color_err_RGB.resize(3);
+    index.clear();
+    ROS_INFO("Try to find the wanted color");
+    for (int i = 0; i < npts; i++) 
+    {
+        pt = transformed_pclKinect_clr_ptr_->points[i].getVector3fMap();
+        color_err_RGB[0] = abs(Color_R_wanted - transformed_pclKinect_clr_ptr_->points[i].r);
+        color_err_RGB[1] = abs(Color_G_wanted - transformed_pclKinect_clr_ptr_->points[i].g);
+        color_err_RGB[2] = abs(Color_B_wanted - transformed_pclKinect_clr_ptr_->points[i].b);
+        color_err = color_err_RGB[0] + color_err_RGB[1] + color_err_RGB[2];
+        if (abs(pt[2] - roughHeight) < HeightRange) 
+        {
+            if (color_err < ColorRange) 
+            {
+                index.push_back(i);
+
+            }
+        }
+    }
+    if (index.size() < 20) 
+    {
+        ROS_INFO("There is no wanted color");
+        return 0;
+    }
+    int n_display = index.size();
+    ROS_INFO("found out %d points of wanted color", n_display);
+
+
+    display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
+    display_ptr_->is_dense = transformed_pclKinect_clr_ptr_->is_dense;
+    display_ptr_->width = n_display; 
+    display_ptr_->height = transformed_pclKinect_clr_ptr_->height;
+    display_ptr_->points.resize(n_display);
+    for (int i = 0; i < n_display; i++) {
+        display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
+    }
+    ROS_INFO("display_point conversed.");
+
+    display_points(*display_ptr_); 
+    
+    TableCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
+    TableHeight = TableCentroid(2);
+
+    ROS_INFO_STREAM("Centroid of Wanted color"<<TableCentroid.transpose());
+    ROS_INFO_STREAM("Height of Wanted color"<<TableHeight);
+    
+    return 1;
+}
+
+
+int Block_detection::find_block()
+{
+    Eigen::Vector3f std_red(255.0, 0.0, 0.0);
+
+    find_color(std_red);
+
+    Eigen::Vector3f pt;
+    Eigen::Vector3f dist;
+
+    std::vector<int> index;
+
+    BlockCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
+    ROS_INFO_STREAM("The centroid of the block:"<<BlockCentroid.transpose());
+
+    int n_block_points = index.size();
+
+
+    vector<int> block_index;
+    block_index.clear();
+    for (int i = 0; i < n_block_points; i++) 
+    {
+        // pt=display_ptr_->points[i].getVector3fMap();
+        // dist = pt - BlockCentroid;
+        // dist[2]=0;
+        // distance = dist.norm();
+        // if(distance < BlockTopRadius)
+        // {
+            block_index.push_back(i);
+        // }
+    }
+    int n_block_top = block_index.size();
+    ROS_INFO("There are %d points around the block's top center",n_block_top);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr block_ptr_(new PointCloud<pcl::PointXYZ>);
+    block_ptr_->header=display_ptr_->header;
+    block_ptr_->is_dense=display_ptr_->is_dense;
+    block_ptr_->width=n_block_top;
+    block_ptr_->height=display_ptr_->height;
+    block_ptr_->points.resize(n_block_top);   
+    for (int i = 0; i < n_block_top; i++) 
+    {
+        block_ptr_->points[i].getVector3fMap()=display_ptr_->points[block_index[i]].getVector3fMap();
+    }
+
+    BlockCentroid = cwru_pcl_utils.compute_centroid(block_ptr_);
+    ROS_INFO_STREAM("The centroid of the block's top:"<<BlockCentroid.transpose());
+    //display_points(*block_ptr_);
+
+
+    block_index.clear();
+    for(int i = 0; i < n_block_points; i++)
+    {
+        pt=display_ptr_->points[i].getVector3fMap();
+        if(abs(pt[2]-BlockCentroid[2])<0.002)
+        {
+            block_index.push_back(i);
+        }
+    }
+    n_block_top = block_index.size();
+    block_ptr_->header=display_ptr_->header;
+    block_ptr_->is_dense=display_ptr_->is_dense;
+    block_ptr_->width=n_block_top;
+    block_ptr_->height=display_ptr_->height;
+    block_ptr_->points.resize(n_block_top);   
+    for (int i = 0; i < n_block_top; i++) 
+    {
+        block_ptr_->points[i].getVector3fMap()=display_ptr_->points[block_index[i]].getVector3fMap();
+    }
+    
+    double block_dist;
+    cwru_pcl_utils.fit_points_to_plane(block_ptr_,Block_Normal,block_dist);
+    Block_Major = cwru_pcl_utils.get_major_axis();
+    ROS_INFO_STREAM("The major vector of the block's top:"<<Block_Major.transpose());
+    //display_points(*block_ptr_);
+
+    return 1;
+}
+
+
+geometry_msgs::Pose Block_detection::getBlockPose()
+{
+    geometry_msgs::Pose pose;
+    pose.position.x = BlockCentroid[0];
+    pose.position.y = BlockCentroid[1];
+    pose.position.z = BlockCentroid[2];
+    
+    Eigen::Vector3f x_axis(1,0,0);
+    double sn_theta = Block_Major.dot(x_axis);
+    double theta = acos(sn_theta);
+    
+    pose.orientation.x = 0;
+    pose.orientation.y = 0;
+    pose.orientation.z = sin(theta/2);
+    pose.orientation.w = cos(theta/2);
+    
+    return pose;
+}

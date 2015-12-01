@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/liutao/catkin_ws/src/rharmony/pocketsphinx/build/devel/setup.sh
