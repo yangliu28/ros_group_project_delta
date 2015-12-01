@@ -17,7 +17,9 @@ Matthew Dobrowsky: human machine interface
 
 *ps9_gripper_control* package contains a library of controlling the yale gripper.
 
-*ps9_pcl_hmi* package contains a library of point cloud processing and human machine interface design, retrive information of color, position and orientation.
+*ps9_pcl* package contains a library of point cloud processing, retrive information of color, position and orientation.
+
+*ps9_hmi* package contains a library of human machine interface design.
 
 ## Tips for team work
 1) In the README.md of each package, give a demo usage of your library, includes the #include, class instantiation and important member function. Or, just give an standalone test program for your library.
@@ -31,38 +33,42 @@ Matthew Dobrowsky: human machine interface
 
 2) For every terminal opened, run `baxter_master` to make sure we are talking to the roscore in baxter.
 
-3) Enable the robot to respond to motion command:
+3) For arm motion:
+
+Enable the robot to respond to motion command:
 
 `rosrun baxter_tools enable_robot.py -e`
 
-4) Start the baxter trajectory interpolation action server:
+Start the baxter trajectory interpolation action server:
 
 `rosrun baxter_traj_streamer  traj_interpolator_as`
 
-5) Start the baxter cartesian move action server:
+Start the baxter cartesian move action server:
 
 `rosrun baxter_cartesian_moves baxter_cart_move_as`
 
-6) Publish yale gripper transformation (data inside needs to be refined):
+4) For yale gripper
+
+Gripper visualization in rviz:
 
 `roslaunch cwru_baxter_launch yale_gripper_xform.launch`
 
-7) Start kinect sensor (our own launch file with sensor calibration data):
-
-`roslaunch ps9_pcl kinect_.launch`
-
-8) Start the ROS motor driver:
+Start the ROS motor driver:
 
 `rosrun baxter_gripper dynamixel_motor_node`
 
-9) Start rviz:
+5) For kinect sensor (our own launch file with sensor calibration data):
+
+`roslaunch ps9_pcl kinect_.launch`
+
+6) For rviz:
 
 `rosrun rviz rviz`
 
-10) If all the above goes right, start our main program:
+7) If all the above goes right, start our main program:
 
 `rosrun ps9_main `
 
-11) 2 to 10 is just for debug, alternative, skip 2 to 10 and run our launch file:
+8) 3 to 7 is just for debug, alternative, skip these and run our launch file:
 
-`roslaunch `
+`roslaunch ps9_main `
