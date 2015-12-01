@@ -8,10 +8,21 @@ find_package(catkin REQUIRED COMPONENTS
   catkin_simple
   roscpp
   std_msgs
+  sensor_msgs
+  tf
+  tf2
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+
+find_package(cmake_modules REQUIRED)
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN_INCLUDE_DIR})
+add_definitions(${EIGEN_DEFINITIONS})
+
+
+find_package(Boost REQUIRED COMPONENTS system thread)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -100,10 +111,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES ps9_pcl
-#  CATKIN_DEPENDS catkin_simple roscpp std_msg
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES ps9_pcl
+  CATKIN_DEPENDS catkin_simple roscpp std_msgs sensor_msgs geometry_msgs
+  DEPENDS system_lib eigen
 )
 
 ###########
@@ -113,14 +124,18 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
+
+find_package(cwru_pcl_utils REQUIRED)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
+  ${cwru_pcl_utils_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(ps9_pcl
-#   src/${PROJECT_NAME}/ps9_pcl.cpp
-# )
+add_library(ps9_pcl
+	src/block_detection.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

@@ -42,10 +42,30 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>catkin_simple</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>std_msg</build_depend>
+  <build_depend>std_msgs</build_depend>
   <run_depend>catkin_simple</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>std_msg</run_depend>
+  <run_depend>std_msgs</run_depend>
+
+  <!--for tf-->
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tf</run_depend>
+
+  <!--for pcl-->
+  <build_depend>sensor_msgs</build_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <build_depend>libpcl-all-dev</build_depend>
+  <run_depend>libpcl-all</run_depend>
+
+  <!--for cwru_pcl_utils-->
+  <build_depend>cwru_pcl_utils</build_depend>
+  <run_depend>cwru_pcl_utils</run_depend>
+
+  <build_depend>camke_modules</build_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

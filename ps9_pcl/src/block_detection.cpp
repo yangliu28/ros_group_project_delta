@@ -1,11 +1,9 @@
 //block_detection.cpp
 //by Tao and Matt
 
-#include <block_detection/block_detection.h>
+#include <ps9_pcl/block_detection.h>
 #include <cwru_pcl_utils/cwru_pcl_utils.h>
 
-
-#include <pcl_chen/pcl_grabing.h>
 #include <ros/ros.h>
 #include <math.h>
 #include <Eigen/Eigen>
