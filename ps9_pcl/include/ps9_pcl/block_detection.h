@@ -1,20 +1,55 @@
+#ifndef Block_DETECTION_H_
+#define Block_DETECTION_H_
+
 #include <cwru_pcl_utils/cwru_pcl_utils.h>
+#include <geometry_msgs/Pose.h>
+#include <Eigen/Eigen> 
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <Eigen/Eigenvalues>
 
-using namespace std;
 
-///let's use RGB first.
-Eigen::Vector3f std_red;
-Eigen::Vector3f std_yellow;
-Eigen::Vector3f std_blue;
-Eigen::Vector3f std_green;
-Eigen::Vector3f std_black;
+#define ColorRange 10
 
-///determin the stand color.
-std_red = (255, 255, 255);
-std_yellow = (255, 255, 255);
-std_blue = (255, 255, 255);
-std_green = (255, 255, 255);
-std_black = (255, 255, 255);
+class Block_detection
+{
+public:
+    Block_detection(ros::NodeHandle* nodehandle);
+    int findColor(); 
+    int findBlock(); 
+    geometry_msgs::Pose getBlockPose(); 
+    Eigen::Vector3d getColor(); 
 
-int find_color();
-int block_detection();
+    CwruPclUtils cwru_pcl_utils;
+
+private:
+    void update_kinect_points();
+    void transform_clr_kinect_cloud(Eigen::Affine3f A);
+    geometry_msgs::Pose transformEigenAffine3dToPose(Eigen::Affine3d e);
+    void display_points(PointCloud<pcl::PointXYZ> points);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclKinect_clr_ptr_;   
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_pclKinect_clr_ptr_;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr display_ptr_;
+    ros::Publisher points_publisher;  
+    geometry_msgs::Pose BlockPose;
+    Eigen::Vector3d BlockColor;
+    double TableHeight;
+    Eigen::Vector3d TableColor;
+    Eigen::Vector3f TableCentroid;
+    
+    Eigen::Vector3f Block_Major;
+    Eigen::Vector3f Block_Normal;
+    Eigen::Vector3f BlockTopCentroid;
+
+
+    ros::Subscriber pointcloud_subscriber_;
+    bool got_kinect_cloud_;
+    void KinectCameraCB(const sensor_msgs::PointCloud2ConstPtr& cloud) ;
+    bool got_kinect_cloud() { return got_kinect_cloud_; };
+    void reset_got_kinect_cloud() {got_kinect_cloud_= false;};
+    void set_got_kinect_cloud() {got_kinect_cloud_ = true;};
+};
+
+#endif // Block_DETECTION_H_
+
+
