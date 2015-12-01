@@ -133,9 +133,10 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(ps9_pcl
+add_library(block_detection
 	src/block_detection.cpp
 )
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -143,16 +144,20 @@ add_library(ps9_pcl
 # add_dependencies(ps9_pcl ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(ps9_pcl_node src/ps9_pcl_node.cpp)
+add_executable(block_detection_test src/block_detection_test.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(ps9_pcl_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+# add_dependencies(block_detection_test
+# 	${${cwru_pcl_utils}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+# 	)
+
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(ps9_pcl_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(block_detection_test block_detection cwru_pcl_utils
+   ${catkin_LIBRARIES}
+ )
 
 #############
 ## Install ##

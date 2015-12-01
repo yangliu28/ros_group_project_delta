@@ -13,24 +13,19 @@
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
 
-
 using namespace std;
 
-///let's use RGB first.
-/*Eigen::Vector3f std_red;
-Eigen::Vector3f std_yellow;
-Eigen::Vector3f std_blue;
-Eigen::Vector3f std_green;
-Eigen::Vector3f std_black;
-
-///determin the stand color.
-std_white = (255, 255, 255);
-std_red = (255, 0, 0);
-std_yellow = (255, 255, 0);
-std_blue = (0, 0, 255);
-std_green = (0, 255, 0);
-std_black = (0, 0, 0);*/
-
+Block_detection::Block_detection(ros::NodeHandle* nodehandle) : cwru_pcl_utils(nodehandle), display_ptr_(new PointCloud<pcl::PointXYZ>),
+pclKinect_clr_ptr_(new PointCloud<pcl::PointXYZRGB>), transformed_pclKinect_clr_ptr_(new PointCloud<pcl::PointXYZRGB>) {
+    TableHeight = roughHeight;
+    // TableColor(0) = roughColor_R;
+    // TableColor(1) = roughColor_G;
+    // TableColor(2) = roughColor_B;
+    points_publisher = nodehandle->advertise<sensor_msgs::PointCloud2>("display_points", 1, true);
+    pointcloud_subscriber_ = nodehandle->subscribe("/kinect/depth/points", 1, &Block_detection::KinectCameraCB, this);
+    got_kinect_cloud_ = false;
+    
+}
 
 
 void Block_detection::update_kinect_points() 
@@ -93,6 +88,23 @@ void Block_detection::update_kinect_points()
 
 
 
+void Block_detection::transform_clr_kinect_cloud(Eigen::Affine3f A) {
+    transformed_pclKinect_clr_ptr_->header = pclKinect_clr_ptr_->header;
+    transformed_pclKinect_clr_ptr_->is_dense = pclKinect_clr_ptr_->is_dense;
+    transformed_pclKinect_clr_ptr_->width = pclKinect_clr_ptr_->width;
+    transformed_pclKinect_clr_ptr_->height = pclKinect_clr_ptr_->height;
+    int npts = pclKinect_clr_ptr_->points.size();
+    cout << "transforming npts = " << npts << endl;
+    transformed_pclKinect_clr_ptr_->points.resize(npts);
+
+    //somewhat odd notation: getVector3fMap() reading OR WRITING points from/to a pointcloud, with conversions to/from Eigen
+    for (int i = 0; i < npts; ++i) {
+        transformed_pclKinect_clr_ptr_->points[i].getVector3fMap() = A * pclKinect_clr_ptr_->points[i].getVector3fMap();
+        transformed_pclKinect_clr_ptr_->points[i].r = pclKinect_clr_ptr_->points[i].r;
+        transformed_pclKinect_clr_ptr_->points[i].g = pclKinect_clr_ptr_->points[i].g;
+        transformed_pclKinect_clr_ptr_->points[i].b = pclKinect_clr_ptr_->points[i].b;
+    }
+}
 
 
 int Block_detection::find_color(Vector3f color_wanted) {
@@ -257,4 +269,24 @@ geometry_msgs::Pose Block_detection::getBlockPose()
     pose.orientation.w = cos(theta/2);
     
     return pose;
+}
+
+
+
+void Block_detection::display_points(PointCloud<pcl::PointXYZ> points)
+{
+    sensor_msgs::PointCloud2 pcl2_display_cloud;
+    pcl::toROSMsg(points, pcl2_display_cloud);
+    pcl2_display_cloud.header.stamp = ros::Time::now();
+    points_publisher.publish(pcl2_display_cloud);
+}
+
+void Block_detection::KinectCameraCB(const sensor_msgs::PointCloud2ConstPtr& cloud) 
+{
+    if (!got_kinect_cloud_) 
+    {
+        pcl::fromROSMsg(*cloud,*pclKinect_clr_ptr_);
+        got_kinect_cloud_ = true;
+    }
+
 }
