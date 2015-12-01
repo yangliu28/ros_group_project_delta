@@ -47,9 +47,9 @@ Matthew Dobrowsky: human machine interface
 
 `roslaunch cwru_baxter_launch yale_gripper_xform.launch`
 
-7) Start kinect sensor (or our own launch file with sensor calibration data):
+7) Start kinect sensor (our own launch file with sensor calibration data):
 
-`roslaunch cwru_baxter_launch kinect.launch`
+`roslaunch ps9_main kinect_.launch`
 
 8) Start the ROS motor driver:
 
