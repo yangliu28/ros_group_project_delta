@@ -98,6 +98,10 @@ void Block_detection::update_kinect_points()
 int Block_detection::find_color(Vector3f color_wanted) {
     update_kinect_points();
 
+    float Color_R_wanted;
+    float Color_G_wanted;
+    float Color_B_wanted;
+
     Color_R_wanted = color_wanted[0];
     Color_G_wanted = color_wanted[1];
     Color_B_wanted = color_wanted[2];
@@ -160,25 +164,33 @@ int Block_detection::find_color(Vector3f color_wanted) {
 
 int Block_detection::find_block()
 {
-    find_color();
+    Eigen::Vector3f std_red(255.0, 0.0, 0.0);
 
-    Eigen::Vector3f BlockCentroid;
+    find_color(std_red);
+
+    Eigen::Vector3f pt;
+    Eigen::Vector3f dist;
+
+    std::vector<int> index;
+
     BlockCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
     ROS_INFO_STREAM("The centroid of the block:"<<BlockCentroid.transpose());
+
+    int n_block_points = index.size();
 
 
     vector<int> block_index;
     block_index.clear();
     for (int i = 0; i < n_block_points; i++) 
     {
-        pt=display_ptr_->points[i].getVector3fMap();
-        dist = pt - BlockCentroid;
-        dist[2]=0;
-        distance = dist.norm();
-        if(distance < BlockTopRadius)
-        {
+        // pt=display_ptr_->points[i].getVector3fMap();
+        // dist = pt - BlockCentroid;
+        // dist[2]=0;
+        // distance = dist.norm();
+        // if(distance < BlockTopRadius)
+        // {
             block_index.push_back(i);
-        }
+        // }
     }
     int n_block_top = block_index.size();
     ROS_INFO("There are %d points around the block's top center",n_block_top);
