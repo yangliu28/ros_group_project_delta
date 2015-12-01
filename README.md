@@ -49,7 +49,7 @@ Matthew Dobrowsky: human machine interface
 
 7) Start kinect sensor (our own launch file with sensor calibration data):
 
-`roslaunch ps9_main kinect_.launch`
+`roslaunch ps9_pcl kinect_.launch`
 
 8) Start the ROS motor driver:
 
