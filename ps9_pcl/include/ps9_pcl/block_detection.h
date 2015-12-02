@@ -11,11 +11,18 @@
 
 #define roughHeight -0.129146973155
 #define HeightRange 0.05
-#define roughColor_R 74
-#define roughColor_G 138
-#define roughColor_B 169
-#define ColorRange 10
-#define TableRadius 0.4
+
+#define StoolColor_R 74
+#define StoolColor_G 138
+#define StoolColor_B 169
+
+#define FloorColor_R 74
+#define FloorColor_G 138
+#define FloorColor_B 169
+
+#define Maxerr 100
+
+#define StoolRadius 0.4
 #define HandMinHeight 0.1
 #define BlockMaxHeight 0.1
 #define BlockTopRadius 0.006
@@ -26,7 +33,10 @@ class Block_detection
 public:
     Block_detection(ros::NodeHandle* nodehandle);
     int find_color(Vector3f color_wanted); 
-    int find_block(); 
+    bool find_block(); 
+
+    bool find_stool();
+    bool find_floor();
     geometry_msgs::Pose getBlockPose(); 
     Eigen::Vector3d getColor(); 
 
@@ -43,9 +53,18 @@ private:
     ros::Publisher points_publisher;  
     geometry_msgs::Pose BlockPose;
     Eigen::Vector3d BlockColor;
-    double TableHeight;
-    Eigen::Vector3d TableColor;
-    Eigen::Vector3f TableCentroid;
+
+    Eigen::Vector3d StoolColor;
+    Eigen::Vector3f StoolCentroid;
+
+    double StoolHeight;
+
+
+    Eigen::Vector3d FloorColor;
+    Eigen::Vector3f FloorCentroid;
+
+    double FloorHeight;
+
     
     Eigen::Vector3f Block_Major;
     Eigen::Vector3f Block_Normal;
