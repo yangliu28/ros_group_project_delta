@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     while(ros::ok())
     {
 
-        cwru_pcl_utils.find_block();
+        cwru_pcl_utils.find_stool();
 
 
         ros::Duration(0.5).sleep();  // sleep for half a second
