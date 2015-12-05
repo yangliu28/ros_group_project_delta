@@ -5,7 +5,7 @@
 <remap from="/camera/depth_registered/points" to="/kinect/depth/points" />
 <include file="$(find freenect_launch)/launch/freenect.launch" />
 
-<include file="$(find ps9_main)/launch/kinect_transform_.launch" />
+<include file="$(find ps9_pcl)/launch/kinect_transform_.launch" />
 
 </launch>
 
