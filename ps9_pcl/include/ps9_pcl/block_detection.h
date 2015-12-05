@@ -9,8 +9,8 @@
 #include <Eigen/Eigenvalues>
 
 
-#define roughHeight -0.129146973155
-#define HeightRange 0.05
+#define roughHeight -0.125
+#define HeightRange 0.06
 
 #define StoolColor_R 74
 #define StoolColor_G 138
@@ -23,10 +23,13 @@
 #define Maxerr 100
 
 #define StoolRadius 0.4
-#define HandMinHeight 0.1
+
 #define BlockMaxHeight 0.1
 #define BlockTopRadius 0.006
 #define BlockRadius 0.05
+
+
+
 
 class Block_detection
 {

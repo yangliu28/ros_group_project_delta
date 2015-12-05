@@ -3,7 +3,6 @@
 //12/2/2015 Copy right reserved
 
 #include <ps9_pcl/block_detection.h>
-#include <cwru_pcl_utils/cwru_pcl_utils.h>
 
 #include <ros/ros.h>
 #include <math.h>
@@ -50,7 +49,7 @@ void Block_detection::update_kinect_points()
         try {
             // The direction of the transform returned will be from the target_frame to the source_frame. 
             // Which if applied to data, will transform data in the source_frame into the target_frame. See tf/CoordinateFrameConventions#Transform_Direction
-            tf_listener.lookupTransform("torso", "kinect_pc_frame", ros::Time(0), tf_sensor_frame_to_torso_frame);
+            tf_listener.lookupTransform("torso", "camera_rgb_optical_frame", ros::Time(0), tf_sensor_frame_to_torso_frame);
         } catch (tf::TransformException &exception) {
             ROS_ERROR("%s", exception.what());
             tferr = true;
@@ -87,76 +86,6 @@ void Block_detection::transform_clr_kinect_cloud(Eigen::Affine3f A) {
         transformed_pclKinect_clr_ptr_->points[i].b = pclKinect_clr_ptr_->points[i].b;
     }
 }
-
-
-// int Block_detection::find_color(Vector3f color_wanted) {
-//     update_kinect_points();
-
-//     float Color_R_wanted;
-//     float Color_G_wanted;
-//     float Color_B_wanted;
-
-//     Color_R_wanted = color_wanted[0];
-//     Color_G_wanted = color_wanted[1];
-//     Color_B_wanted = color_wanted[2];
-
-//     int npts = transformed_pclKinect_clr_ptr_->points.size();
-//     vector<int> index;
-//     Eigen::Vector3f pt;
-//     vector<double> color_err_RGB;
-//     double color_err;
-//     color_err = 255;
-//     color_err_RGB.resize(3);
-//     index.clear();
-//     ROS_INFO("Try to find the wanted color");
-//     for (int i = 0; i < npts; i++) 
-//     {
-//         pt = transformed_pclKinect_clr_ptr_->points[i].getVector3fMap();
-//         color_err_RGB[0] = abs(Color_R_wanted - transformed_pclKinect_clr_ptr_->points[i].r);
-//         color_err_RGB[1] = abs(Color_G_wanted - transformed_pclKinect_clr_ptr_->points[i].g);
-//         color_err_RGB[2] = abs(Color_B_wanted - transformed_pclKinect_clr_ptr_->points[i].b);
-//         color_err = color_err_RGB[0] + color_err_RGB[1] + color_err_RGB[2];
-//         if (abs(pt[2] - roughHeight) < HeightRange) 
-//         {
-//             if (color_err < Maxerr) 
-//             {
-//                 index.push_back(i);
-
-//             }
-//         }
-//     }
-//     if (index.size() < 20) 
-//     {
-//         ROS_INFO("There is no wanted color");
-//         return 0;
-//     }
-//     int n_display = index.size();
-//     ROS_INFO("found out %d points of wanted color", n_display);
-
-
-//     display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
-//     display_ptr_->is_dense = transformed_pclKinect_clr_ptr_->is_dense;
-//     display_ptr_->width = n_display; 
-//     display_ptr_->height = transformed_pclKinect_clr_ptr_->height;
-//     display_ptr_->points.resize(n_display);
-//     for (int i = 0; i < n_display; i++) {
-//         display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
-//     }
-//     ROS_INFO("display_point conversed.");
-
-//     display_points(*display_ptr_); 
-    
-//     StoolCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
-//     StoolHeight = StoolCentroid(2);
-
-//     ROS_INFO_STREAM("Centroid of Wanted color"<<StoolCentroid.transpose());
-//     ROS_INFO_STREAM("Height of Wanted color"<<StoolHeight);
-    
-//     return 1;
-// }
-
-
-
 
 
 geometry_msgs::Pose Block_detection::getBlockPose()
@@ -220,7 +149,8 @@ bool Block_detection::find_stool() {
         color_err_RGB[1] = abs(StoolColor_G - transformed_pclKinect_clr_ptr_->points[i].g);
         color_err_RGB[2] = abs(StoolColor_B - transformed_pclKinect_clr_ptr_->points[i].b);
 
-        //color_err = color_err_RGB[0] + color_err_RGB[1] + color_err_RGB[2];
+        // ROS_INFO("%f", pt[2]);
+
         if (abs(pt[2] - roughHeight) < HeightRange) 
         {
             if (color_err_RGB[0] < Maxerr && color_err_RGB[1] < Maxerr && color_err_RGB[2] < Maxerr) 
@@ -228,6 +158,7 @@ bool Block_detection::find_stool() {
                 index.push_back(i);
 
             }
+            // index.push_back(i);
         }
     }
     if (index.size() < 20) 
@@ -249,7 +180,7 @@ bool Block_detection::find_stool() {
     }
     ROS_INFO("display_point conversed.");
 
-    display_points(*display_ptr_); 
+    // display_points(*display_ptr_); 
     
     StoolCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
     StoolHeight = StoolCentroid(2);
@@ -257,69 +188,69 @@ bool Block_detection::find_stool() {
     ROS_INFO_STREAM("Centroid of the Stool"<<StoolCentroid.transpose());
     ROS_INFO_STREAM("Height of the stool"<<StoolHeight);
     
-    return 1;
+    return true;
 }
 
-// bool Block_detection::find_floor() 
-// {
+bool Block_detection::find_floor() 
+{
 
-//     update_kinect_points();
+    update_kinect_points();
 
-//     int npts = transformed_pclKinect_clr_ptr_->points.size();
-//     vector<int> index;
-//     Eigen::Vector3f pt;
-//     vector<double> color_err_RGB;
-//     double color_err;
-//     color_err = 255;
-//     color_err_RGB.resize(3);
-//     index.clear();
-//     ROS_INFO("Try to find the Floor. Wait");
-//     for (int i = 0; i < npts; i++) 
-//     {
-//         pt = transformed_pclKinect_clr_ptr_->points[i].getVector3fMap();
-//         color_err_RGB[0] = abs(FloorColor_R - transformed_pclKinect_clr_ptr_->points[i].r);
-//         color_err_RGB[1] = abs(FloorColor_G - transformed_pclKinect_clr_ptr_->points[i].g);
-//         color_err_RGB[2] = abs(FloorColor_B - transformed_pclKinect_clr_ptr_->points[i].b);
+    int npts = transformed_pclKinect_clr_ptr_->points.size();
+    vector<int> index;
+    Eigen::Vector3f pt;
+    vector<double> color_err_RGB;
+    double color_err;
+    color_err = 255;
+    color_err_RGB.resize(3);
+    index.clear();
+    ROS_INFO("Try to find the Floor. Wait");
+    for (int i = 0; i < npts; i++) 
+    {
+        pt = transformed_pclKinect_clr_ptr_->points[i].getVector3fMap();
+        color_err_RGB[0] = abs(FloorColor_R - transformed_pclKinect_clr_ptr_->points[i].r);
+        color_err_RGB[1] = abs(FloorColor_G - transformed_pclKinect_clr_ptr_->points[i].g);
+        color_err_RGB[2] = abs(FloorColor_B - transformed_pclKinect_clr_ptr_->points[i].b);
 
-//         //color_err = color_err_RGB[0] + color_err_RGB[1] + color_err_RGB[2];
-//         if (abs(pt[2] - roughHeight) < HeightRange) 
-//         {
-//             if (color_err_RGB[0] < Maxerr && color_err_RGB[1] < Maxerr && color_err_RGB[2] < Maxerr) 
-//             {
-//                 index.push_back(i);
+        //color_err = color_err_RGB[0] + color_err_RGB[1] + color_err_RGB[2];
+        if (abs(pt[2] - roughHeight) < HeightRange) 
+        {
+            if (color_err_RGB[0] < Maxerr && color_err_RGB[1] < Maxerr && color_err_RGB[2] < Maxerr) 
+            {
+                index.push_back(i);
 
-//             }
-//         }
-//     }
-//     if (index.size() < 20) 
-//     {
-//         ROS_INFO("Floor not found");
-//         return 0;
-//     }
-//     int n_display = index.size();
-//     ROS_INFO("found out %d points on the floor", n_display);
+            }
+        }
+    }
+    if (index.size() < 20) 
+    {
+        ROS_INFO("Floor not found");
+        return 0;
+    }
+    int n_display = index.size();
+    ROS_INFO("found out %d points on the floor", n_display);
 
 
-//     display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
-//     display_ptr_->is_dense = transformed_pclKinect_clr_ptr_->is_dense;
-//     display_ptr_->width = n_display; 
-//     display_ptr_->height = transformed_pclKinect_clr_ptr_->height;
-//     display_ptr_->points.resize(n_display);
-//     for (int i = 0; i < n_display; i++) {
-//         display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
-//     }
-//     ROS_INFO("display_point conversed.");
+    display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
+    display_ptr_->is_dense = transformed_pclKinect_clr_ptr_->is_dense;
+    display_ptr_->width = n_display; 
+    display_ptr_->height = transformed_pclKinect_clr_ptr_->height;
+    display_ptr_->points.resize(n_display);
+    for (int i = 0; i < n_display; i++) {
+        display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
+    }
+    ROS_INFO("display_point conversed.");
 
-//     display_points(*display_ptr_); 
+    // display_points(*display_ptr_); 
     
-//     StoolCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
-//     //StoolHeight = StoolCentroid(2);
+    StoolCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
+    //StoolHeight = StoolCentroid(2);
 
-//     ROS_INFO_STREAM("Centroid of the Stool"<<StoolCentroid.transpose());
-//     //ROS_INFO_STREAM("Height of the stool"<<StoolHeight);
+    ROS_INFO_STREAM("Centroid of the Stool"<<StoolCentroid.transpose());
+    //ROS_INFO_STREAM("Height of the stool"<<StoolHeight);
     
-//     return true;
-// }
+    return true;
+}
 
 
 bool Block_detection::find_block()
@@ -339,7 +270,7 @@ bool Block_detection::find_block()
         dist[2]=0;
         distance = dist.norm();
         if(distance < StoolRadius)
-            if(pt[2]>(StoolHeight+0.2) && pt[2]<BlockMaxHeight)
+            if(pt[2]>(StoolHeight+0.03) && pt[2]<BlockMaxHeight)
             {
                 index.push_back(i);
                 BlockColor(0)+=transformed_pclKinect_clr_ptr_->points[i].r;
@@ -366,7 +297,7 @@ bool Block_detection::find_block()
     {
         display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
     }
-    display_points(*display_ptr_);
+    // display_points(*display_ptr_);
     
     Eigen::Vector3f BlockCentroid;
     BlockCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
@@ -374,7 +305,7 @@ bool Block_detection::find_block()
 
     
     double block_dist;
-    cwru_pcl_utils.fit_points_to_plane(display_ptr_,Block_Normal,block_dist);
+    cwru_pcl_utils.fit_points_to_plane(display_ptr_, Block_Normal, block_dist);
     Block_Major = cwru_pcl_utils.get_major_axis();
     ROS_INFO_STREAM("The major vector of the block's top:"<<Block_Major.transpose());
 
