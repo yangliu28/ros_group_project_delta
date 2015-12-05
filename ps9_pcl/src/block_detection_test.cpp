@@ -19,11 +19,12 @@ int main(int argc, char** argv)
 
     while(ros::ok())
     {
-        if (cwru_pcl_utils.find_stool())
-        {
-            cwru_pcl_utils.find_block();
-        }
-
+        // if (cwru_pcl_utils.find_stool())
+        // {
+        //     cwru_pcl_utils.find_block();
+        // }
+        cwru_pcl_utils.find_stool();
+        cwru_pcl_utils.find_block();
 
         ros::Duration(1).sleep();
         ros::spinOnce();

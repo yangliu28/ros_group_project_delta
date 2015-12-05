@@ -8,7 +8,8 @@
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 
-#define BAXTER_REAL
+#define BAXTER_SIM
+// #define BAXTER_REAL
 
 #ifdef BAXTER_SIM
 #define roughHeight -0.129146973155
