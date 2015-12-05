@@ -8,12 +8,9 @@
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 
-#define BAXTER_SIM
-// #define BAXTER_REAL
 
-#ifdef BAXTER_SIM
-#define roughHeight -0.129146973155
-#define HeightRange 0.05
+#define roughHeight -0.125
+#define HeightRange 0.06
 
 #define StoolColor_R 74
 #define StoolColor_G 138
@@ -30,28 +27,9 @@
 #define BlockMaxHeight 0.1
 #define BlockTopRadius 0.006
 #define BlockRadius 0.05
-#endif
 
-#ifdef BAXTER_REAL
-#define roughHeight -0.129 
-#define HeightRange 0.05
 
-#define StoolColor_R 140  
-#define StoolColor_G 120
-#define StoolColor_B 120
 
-#define FloorColor_R 74
-#define FloorColor_G 138
-#define FloorColor_B 169
-
-#define Maxerr 60
-
-#define StoolRadius 0.25 
-
-#define BlockMaxHeight 0.1
-#define BlockTopRadius 0.006
-#define BlockRadius 0.05
-#endif
 
 class Block_detection
 {

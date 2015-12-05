@@ -50,7 +50,7 @@ void Block_detection::update_kinect_points()
         try {
             // The direction of the transform returned will be from the target_frame to the source_frame. 
             // Which if applied to data, will transform data in the source_frame into the target_frame. See tf/CoordinateFrameConventions#Transform_Direction
-            tf_listener.lookupTransform("torso", "kinect_pc_frame", ros::Time(0), tf_sensor_frame_to_torso_frame);
+            tf_listener.lookupTransform("torso", "camera_rgb_optical_frame", ros::Time(0), tf_sensor_frame_to_torso_frame);
         } catch (tf::TransformException &exception) {
             ROS_ERROR("%s", exception.what());
             tferr = true;
@@ -150,7 +150,8 @@ bool Block_detection::find_stool() {
         color_err_RGB[1] = abs(StoolColor_G - transformed_pclKinect_clr_ptr_->points[i].g);
         color_err_RGB[2] = abs(StoolColor_B - transformed_pclKinect_clr_ptr_->points[i].b);
 
-        //color_err = color_err_RGB[0] + color_err_RGB[1] + color_err_RGB[2];
+        // ROS_INFO("%f", pt[2]);
+
         if (abs(pt[2] - roughHeight) < HeightRange) 
         {
             if (color_err_RGB[0] < Maxerr && color_err_RGB[1] < Maxerr && color_err_RGB[2] < Maxerr) 
@@ -158,6 +159,7 @@ bool Block_detection::find_stool() {
                 index.push_back(i);
 
             }
+            // index.push_back(i);
         }
     }
     if (index.size() < 20) 
