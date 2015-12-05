@@ -269,7 +269,7 @@ bool Block_detection::find_block()
         dist[2]=0;
         distance = dist.norm();
         if(distance < StoolRadius)
-            if(pt[2]>(StoolHeight+0.2) && pt[2]<BlockMaxHeight)
+            if(pt[2]>(StoolHeight+0.03) && pt[2]<BlockMaxHeight)
             {
                 index.push_back(i);
                 BlockColor(0)+=transformed_pclKinect_clr_ptr_->points[i].r;
@@ -304,7 +304,7 @@ bool Block_detection::find_block()
 
     
     double block_dist;
-    cwru_pcl_utils.fit_points_to_plane(display_ptr_,Block_Normal,block_dist);
+    cwru_pcl_utils.fit_points_to_plane(display_ptr_, Block_Normal, block_dist);
     Block_Major = cwru_pcl_utils.get_major_axis();
     ROS_INFO_STREAM("The major vector of the block's top:"<<Block_Major.transpose());
 
