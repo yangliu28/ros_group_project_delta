@@ -180,7 +180,7 @@ bool Block_detection::find_stool() {
     }
     ROS_INFO("display_point conversed.");
 
-    display_points(*display_ptr_); 
+    // display_points(*display_ptr_); 
     
     StoolCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
     StoolHeight = StoolCentroid(2);
@@ -241,7 +241,7 @@ bool Block_detection::find_floor()
     }
     ROS_INFO("display_point conversed.");
 
-    display_points(*display_ptr_); 
+    // display_points(*display_ptr_); 
     
     StoolCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
     //StoolHeight = StoolCentroid(2);
@@ -297,7 +297,7 @@ bool Block_detection::find_block()
     {
         display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
     }
-    display_points(*display_ptr_);
+    // display_points(*display_ptr_);
     
     Eigen::Vector3f BlockCentroid;
     BlockCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
