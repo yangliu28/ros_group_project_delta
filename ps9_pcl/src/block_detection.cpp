@@ -3,7 +3,6 @@
 //12/2/2015 Copy right reserved
 
 #include <ps9_pcl/block_detection.h>
-#include <cwru_pcl_utils/cwru_pcl_utils.h>
 
 #include <ros/ros.h>
 #include <math.h>
