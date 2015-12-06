@@ -1,20 +1,30 @@
 // main program for libraries in this assignment to be used collaborately
 
 #include <ros/ros.h>
+#include <ros/ros.h>
+#include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
 // eigen lilbraries to be used in position calculation of arm motion
 #include <Eigen/Eigen>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <Eigen/Eigenvalues>
 // for motion realization
 #include <ps9_arm_motion/ps9_arm_motion_commander_lib.h>
 // for gripper control
 #include <ps9_gripper_control/ps9_gripper_control.h>
-// for point cloud sensor
-#include <ps9_pcl_hmi/ps9_pcl_hmi_lib.h>
-// add more includes to define your variables
+// for block detection with pcl
+#include <ps9_pcl/block_detection.h>
+// for human hand detection in hmi
+#include <ps9_hmi/ps9_hmi_lib.h>
+
+
+// arm motion strategy base on block colors
+
+
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "ps9_main_pseudocode");
+    ros::init(argc, argv, "ps9_main");
     ros::NodeHandle nh;
 
 
@@ -22,31 +32,30 @@ int main(int argc, char** argv) {
 
     // INSTANTIATION OF CLASS FROM YOUR LIBRARIES
 
-    // instantiate an point cloud sensor object
-    PointCloudSensor point_cloud_sensor;
-
+    // instantiate block detection object
+    Block_detection block_detection(&nh);
     // instantiate an yale hand gripper object
     Gripper baxter_gripper_control(&nh);
-
     // instantiate an arm motion object
     ArmMotionCommander arm_motion_commander(&nh);
+    // instantiate an human hand detection object
 
 
 
 
-    // PREPARATION WORK FOR YOUR LIBRARIES BEFORE THE LOOP
+    // PREPARATION WORK FOR EACH LIBRARIES BEFORE THE LOOP
 
     // preparation work for point cloud sensor
-    // check if point cloud from kinect is active
-    while (!point_cloud_sensor.got_kinect_cloud()) {
-        ROS_INFO("did not receive pointcloud");
-        ros::spinOnce();
-        ros::Duration(1.0).sleep();
-    }
-    ROS_INFO("got a pointcloud");
-    // fill in here if there is more 
+    // // check if point cloud from kinect is active
+    // while (!point_cloud_sensor.got_kinect_cloud()) {
+    //     ROS_INFO("did not receive pointcloud");
+    //     ros::spinOnce();
+    //     ros::Duration(1.0).sleep();
+    // }
+    // ROS_INFO("got a pointcloud");
 
-    // preparation work for yale gripper, check if gripper is working by a grasp move
+    // preparation work for yale gripper
+    // check if gripper is working by a grasp move
     baxter_gripper_control.open_hand();  // no delay between these moves
     baxter_gripper_control.close_hand();
     baxter_gripper_control.open_hand();
@@ -99,45 +108,44 @@ int main(int argc, char** argv) {
     rtn_val=arm_motion_commander.plan_move_to_pre_pose();  // plan the path
     rtn_val=arm_motion_commander.rt_arm_execute_planned_path();  // execute the planned path
 
+    // for hand detection in human machine interface
+
 
 
 
     // THE LOOP
 
     while (ros::ok()) {
-        if (point_cloud_sensor.b_get_colored_block()) {  // check if there is blocks on the stool
+        if (block_detection.b_get_colored_block()) {  // check if there is blocks on the stool
             // if here, means there is new block been placed on the stool
 
             // get block color from point cloud
-            block_color = point_cloud_sensor.get_block_color();
+            block_color = block_detection.get_block_color();
 
             // get block position and orientation, and move arm to it
-            arm_position = point_cloud_sensor.get_block_position();
-            arm_orientation = point_cloud_sensor.get_block_orientation();
+            arm_position = block_detection.get_block_position();
+            arm_orientation = block_detection.get_block_orientation();
             right_arm_pose = arm_motion_commander.set_destination_pose(arm_position, arm_orientation);
             arm_motion_commander.move_to_destination();
 
             // grasp the block
-            gripper_controller.grasp_the_block();
+            baxter_gripper_control.close_hand();
 
             // move right arm away to a pre-defined pose
             arm_motion_commander.move_to_pre_define_pose();
 
             // assign different arm destination according to block color
-            // we still need to perform different actions for different color
-            // for one color we are going to track the coordinate block's position
-            // and move the block to this position
-            // coordinate block could be hold by hand
+            // colored-block classification precedure
             switch block_color:
-                case point_cloud_sensor.get_color_blue():
+                case block_detection.get_color_blue():
                     // if the color is blue defined in the point color class
                     // then the arm poses is ...
                     right_arm_pose...
-                case point_cloud_sensor.get_color_red();
+                case block_detection.get_color_red();
                     // if the color is red defined in the point color class
                     // then the arm poses is ...
                     right_arm_pose...
-                case point_cloud_sensor.get_color_green();
+                case block_detection.get_color_green();
                     // if the color is green defined in the point color class
                     // then the arm poses is ...
                     right_arm_pose...
@@ -147,7 +155,7 @@ int main(int argc, char** argv) {
             arm_motion_commander.move_to_destination();
 
             // unrelease the block
-            gripper_controller.release_the_block();
+            baxter_gripper_control.open_hand();
 
             // move right arm to pre-define pose
             arm_motion_commander.move_to_pre_define_pose();
