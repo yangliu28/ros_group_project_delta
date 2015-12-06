@@ -20,7 +20,7 @@
 #define FloorColor_G 138
 #define FloorColor_B 169
 
-#define Maxerr 100
+#define Maxerr 60
 
 #define StoolRadius 0.4
 
@@ -37,7 +37,7 @@ public:
     Block_detection(ros::NodeHandle* nodehandle);
     int find_color(Vector3f color_wanted); 
 
-    int find_block_by_color();
+    int find_block_by_color(Vector3f color_wanted);
 
     bool find_block(); 
 
@@ -45,7 +45,7 @@ public:
     bool find_floor();
 
     bool find_hand();
-    geometry_msgs::Pose getBlockPose(); 
+    geometry_msgs::Pose find_pose(); 
     Eigen::Vector3d getColor(); 
 
     CwruPclUtils cwru_pcl_utils;

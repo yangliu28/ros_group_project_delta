@@ -88,27 +88,6 @@ void Block_detection::transform_clr_kinect_cloud(Eigen::Affine3f A) {
 }
 
 
-geometry_msgs::Pose Block_detection::getBlockPose()
-{
-    geometry_msgs::Pose pose;
-    pose.position.x = BlockCentroid[0];
-    pose.position.y = BlockCentroid[1];
-    pose.position.z = BlockCentroid[2];
-    
-    Eigen::Vector3f x_axis(1,0,0);
-    double sn_theta = Block_Major.dot(x_axis);
-    double theta = acos(sn_theta);
-    
-    pose.orientation.x = 0;
-    pose.orientation.y = 0;
-    pose.orientation.z = sin(theta/2);
-    pose.orientation.w = cos(theta/2);
-    
-    return pose;
-}
-
-
-
 void Block_detection::display_points(PointCloud<pcl::PointXYZ> points)
 {
     sensor_msgs::PointCloud2 pcl2_display_cloud;
@@ -141,7 +120,7 @@ bool Block_detection::find_stool() {
     color_err = 255;
     color_err_RGB.resize(3);
     index.clear();
-    ROS_INFO("Try to find the stool. Wait");
+    // ROS_INFO("Try to find the stool. Wait");
     for (int i = 0; i < npts; i++) 
     {
         pt = transformed_pclKinect_clr_ptr_->points[i].getVector3fMap();
@@ -167,7 +146,7 @@ bool Block_detection::find_stool() {
         return 0;
     }
     int n_display = index.size();
-    ROS_INFO("found out %d points on the stool", n_display);
+    // ROS_INFO("found out %d points on the stool", n_display);
 
 
     display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
@@ -178,15 +157,15 @@ bool Block_detection::find_stool() {
     for (int i = 0; i < n_display; i++) {
         display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
     }
-    ROS_INFO("display_point conversed.");
+    // ROS_INFO("display_point conversed.");
 
     // display_points(*display_ptr_); 
     
     StoolCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
     StoolHeight = StoolCentroid(2);
 
-    ROS_INFO_STREAM("Centroid of the Stool"<<StoolCentroid.transpose());
-    ROS_INFO_STREAM("Height of the stool"<<StoolHeight);
+    // ROS_INFO_STREAM("Centroid of the Stool"<<StoolCentroid.transpose());
+    // ROS_INFO_STREAM("Height of the stool"<<StoolHeight);
     
     return true;
 }
@@ -284,9 +263,23 @@ bool Block_detection::find_block()
         ROS_INFO("There is no block on the stool.");
         return 0;
     }
-    ROS_INFO("There is a block with %d points", n_block_points);
+    //ROS_INFO("There is a block with %d points", n_block_points);
     BlockColor/=n_block_points;
-    ROS_INFO_STREAM("The block color:"<<BlockColor.transpose());
+    //ROS_INFO_STREAM("The block color:"<<BlockColor.transpose());
+
+    if (BlockColor[0] >= BlockColor[1] && BlockColor[0] >= BlockColor[2])
+    {
+        ROS_INFO("block is red");
+    }
+    else if (BlockColor[1] >= BlockColor[0] && BlockColor[1] >= BlockColor[2])
+    {
+        ROS_INFO("block is green");
+    }
+    else if (BlockColor[2] >= BlockColor[0] && BlockColor[2] >= BlockColor[1])
+    {
+        ROS_INFO("block is blue");
+    }
+
     
     display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
     display_ptr_->is_dense = transformed_pclKinect_clr_ptr_->is_dense;
@@ -301,19 +294,19 @@ bool Block_detection::find_block()
     
     Eigen::Vector3f BlockCentroid;
     BlockCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
-    ROS_INFO_STREAM("The centroid of the block:"<<BlockCentroid.transpose());
+    //ROS_INFO_STREAM("The centroid of the block:"<<BlockCentroid.transpose());
 
     
     double block_dist;
     cwru_pcl_utils.fit_points_to_plane(display_ptr_, Block_Normal, block_dist);
     Block_Major = cwru_pcl_utils.get_major_axis();
-    ROS_INFO_STREAM("The major vector of the block's top:"<<Block_Major.transpose());
+    //ROS_INFO_STREAM("The major vector of the block's top:"<<Block_Major.transpose());
 
     return true;
 }
 
 
-int Block_detection::find_block_by_color() {
+int Block_detection::find_block_by_color(Vector3f color_given) {
 
     update_kinect_points();
 
@@ -325,33 +318,31 @@ int Block_detection::find_block_by_color() {
     color_err = 255;
     color_err_RGB.resize(3);
     index.clear();
+
     ROS_INFO("Try to find the stool. Wait");
     for (int i = 0; i < npts; i++) 
     {
         pt = transformed_pclKinect_clr_ptr_->points[i].getVector3fMap();
-        color_err_RGB[0] = abs(StoolColor_R - transformed_pclKinect_clr_ptr_->points[i].r);
-        color_err_RGB[1] = abs(StoolColor_G - transformed_pclKinect_clr_ptr_->points[i].g);
-        color_err_RGB[2] = abs(StoolColor_B - transformed_pclKinect_clr_ptr_->points[i].b);
+        color_err_RGB[0] = abs(color_given[0] - transformed_pclKinect_clr_ptr_->points[i].r);
+        color_err_RGB[1] = abs(color_given[1] - transformed_pclKinect_clr_ptr_->points[i].g);
+        color_err_RGB[2] = abs(color_given[2] - transformed_pclKinect_clr_ptr_->points[i].b);
 
         // ROS_INFO("%f", pt[2]);
 
-        if (abs(pt[2] - roughHeight) < HeightRange) 
-        {
             if (color_err_RGB[0] < Maxerr && color_err_RGB[1] < Maxerr && color_err_RGB[2] < Maxerr) 
             {
                 index.push_back(i);
 
             }
             // index.push_back(i);
-        }
     }
     if (index.size() < 20) 
     {
-        ROS_INFO("Stool not found");
+        ROS_INFO("block not found");
         return 0;
     }
     int n_display = index.size();
-    ROS_INFO("found out %d points on the stool", n_display);
+    ROS_INFO("found out %d points of the block", n_display);
 
 
     display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
@@ -362,15 +353,15 @@ int Block_detection::find_block_by_color() {
     for (int i = 0; i < n_display; i++) {
         display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
     }
-    ROS_INFO("display_point conversed.");
+    //ROS_INFO("display_point conversed.");
 
     // display_points(*display_ptr_); 
     
     StoolCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
     StoolHeight = StoolCentroid(2);
 
-    ROS_INFO_STREAM("Centroid of the Stool"<<StoolCentroid.transpose());
-    ROS_INFO_STREAM("Height of the stool"<<StoolHeight);
+    ROS_INFO_STREAM("Centroid of the block"<<StoolCentroid.transpose());
+    ROS_INFO_STREAM("Height of the block"<<StoolHeight);
     
     return true;
 }
@@ -406,4 +397,31 @@ bool Block_detection::find_hand()
     ROS_INFO("Hand found");
 
     return true;
+}
+
+geometry_msgs::Pose Block_detection::find_pose()
+{
+    geometry_msgs::Pose pose;
+    pose.position.x = BlockCentroid[0];
+    pose.position.y = BlockCentroid[1];
+    pose.position.z = BlockCentroid[2];
+
+    double delta;
+
+    Eigen::Vector3f unit_axis_x(1,0,0);
+    double sin_delta = Block_Major.dot(unit_axis_x);
+    delta = acos(sin_delta);
+
+    pose.orientation.x = 0;
+    pose.orientation.y = 0;
+    pose.orientation.z = 0;
+    pose.orientation.w = cos(delta/2);
+    
+    // pose.orientation.x = 0;
+    // pose.orientation.y = 0;
+    // pose.orientation.z = sin(delta/2);
+    // pose.orientation.w = cos(delta/2);
+
+    return pose;
+
 }
