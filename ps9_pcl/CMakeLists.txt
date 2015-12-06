@@ -5,7 +5,6 @@ project(ps9_pcl)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  catkin_simple
   roscpp
   std_msgs
   sensor_msgs
@@ -23,7 +22,6 @@ add_definitions(${EIGEN_DEFINITIONS})
 
 
 find_package(Boost REQUIRED COMPONENTS system thread)
-
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -113,7 +111,7 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ps9_pcl
-  CATKIN_DEPENDS catkin_simple roscpp std_msgs sensor_msgs geometry_msgs
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs geometry_msgs
   DEPENDS system_lib eigen
 )
 
@@ -124,7 +122,6 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-
 find_package(cwru_pcl_utils REQUIRED)
 include_directories(
   include
@@ -133,10 +130,9 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(block_detection
+add_library(ps9_pcl
 	src/block_detection.cpp
 )
-
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -150,14 +146,9 @@ add_executable(block_detection_test src/block_detection_test.cpp)
 ## same as for the library above
 # add_dependencies(ps9_pcl_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-# add_dependencies(block_detection_test
-# 	${${cwru_pcl_utils}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
-# 	)
-
 ## Specify libraries to link a library or executable target against
-target_link_libraries(block_detection_test block_detection cwru_pcl_utils
-   ${catkin_LIBRARIES}
- )
+target_link_libraries(ps9_pcl cwru_pcl_utils ${catkin_LIBRARIES})
+target_link_libraries(block_detection_test ps9_pcl ${catkin_LIBRARIES})
 
 #############
 ## Install ##

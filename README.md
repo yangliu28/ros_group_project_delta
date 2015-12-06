@@ -72,3 +72,13 @@ Start the ROS motor driver:
 8) 3 to 7 is just for debug, alternative, skip these and run our launch file:
 
 `roslaunch ps9_main `
+
+## Standard operating precedure of HMI
+1) After everything is running, the right arm of baxter will move to pre-pose and go to idle mode, waiting for instructions.
+
+2) The tester (human) puts his left hand in a suitable place in front of kinect sensor, let baxter know the tester is placing the blocks.
+
+3) The tester places one block on the stool with right hand, and moves away left hand, let baxter know the tester has finished placing the blocks.
+
+4) Baxter begins to recognize the blocks and make movements. The test then keeps waiting untill baxter finishes her movements. Repeat previous precedures.
+
