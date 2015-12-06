@@ -18,10 +18,6 @@
 // #include <ps9_hmi/ps9_hmi_lib.h>
 
 
-// arm motion strategy base on block colors
-
-
-
 int main(int argc, char** argv) {
     ros::init(argc, argv, "ps9_main");
     ros::NodeHandle nh;

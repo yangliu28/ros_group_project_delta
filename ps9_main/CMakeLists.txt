@@ -15,8 +15,8 @@ catkin_simple()
 # cs_add_library(my_lib src/my_lib.cpp)   
 
 # Executables
-# cs_add_executable(ps9_main src/ps9_main.cpp)
-# target_link_libraries(ps9_main ${catkin_LIBRARIES})
+cs_add_executable(ps9_main src/ps9_main.cpp)
+target_link_libraries(ps9_main ${catkin_LIBRARIES})
 
 cs_install()
 cs_export()

@@ -26,7 +26,7 @@ int main(int argc, char** argv)
         {
             cwru_pcl_utils.find_block();
             pose = cwru_pcl_utils.find_pose();
-            ROS_INFO(pose);
+            // ROS_INFO(pose);
         }
         // cwru_pcl_utils.find_stool();
         // cwru_pcl_utils.find_block();
