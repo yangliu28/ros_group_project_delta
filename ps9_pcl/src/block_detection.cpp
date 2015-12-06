@@ -232,7 +232,7 @@ bool Block_detection::find_floor()
 }
 
 
-bool Block_detection::find_block()
+int Block_detection::find_block()
 {
     update_kinect_points();
     int npts = transformed_pclKinect_clr_ptr_->points.size();
@@ -270,14 +270,17 @@ bool Block_detection::find_block()
     if (BlockColor[0] >= BlockColor[1] && BlockColor[0] >= BlockColor[2])
     {
         ROS_INFO("block is red");
+        return 1;
     }
     else if (BlockColor[1] >= BlockColor[0] && BlockColor[1] >= BlockColor[2])
     {
         ROS_INFO("block is green");
+        return 2;
     }
     else if (BlockColor[2] >= BlockColor[0] && BlockColor[2] >= BlockColor[1])
     {
         ROS_INFO("block is blue");
+        return 3;
     }
 
     
@@ -302,7 +305,7 @@ bool Block_detection::find_block()
     Block_Major = cwru_pcl_utils.get_major_axis();
     //ROS_INFO_STREAM("The major vector of the block's top:"<<Block_Major.transpose());
 
-    return true;
+    //return true;
 }
 
 

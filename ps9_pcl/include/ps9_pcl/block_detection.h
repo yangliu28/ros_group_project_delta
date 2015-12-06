@@ -39,7 +39,7 @@ public:
 
     int find_block_by_color(Vector3f color_wanted);
 
-    bool find_block(); 
+    int find_block(); 
 
     bool find_stool();
     bool find_floor();
