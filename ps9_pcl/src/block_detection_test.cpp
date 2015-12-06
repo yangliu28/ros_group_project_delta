@@ -23,9 +23,10 @@ int main(int argc, char** argv)
         // {
         //     cwru_pcl_utils.find_block();
         // }
-        cwru_pcl_utils.find_stool();
-        cwru_pcl_utils.find_block();
-
+        // cwru_pcl_utils.find_stool();
+        // cwru_pcl_utils.find_block();
+        cwru_pcl_utils.find_hand();
+        
         ros::Duration(1).sleep();
         ros::spinOnce();
     }

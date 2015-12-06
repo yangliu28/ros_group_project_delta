@@ -36,10 +36,15 @@ class Block_detection
 public:
     Block_detection(ros::NodeHandle* nodehandle);
     int find_color(Vector3f color_wanted); 
+
+    int find_block_by_color();
+
     bool find_block(); 
 
     bool find_stool();
     bool find_floor();
+
+    bool find_hand();
     geometry_msgs::Pose getBlockPose(); 
     Eigen::Vector3d getColor(); 
 

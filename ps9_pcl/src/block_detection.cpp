@@ -29,13 +29,13 @@ pclKinect_clr_ptr_(new PointCloud<pcl::PointXYZRGB>), transformed_pclKinect_clr_
 void Block_detection::update_kinect_points() 
 {
     reset_got_kinect_cloud(); // turn on the camera
-    ROS_INFO("begin to update kinect points");
+    //ROS_INFO("begin to update kinect points");
     while (!got_kinect_cloud()) {
-        ROS_INFO("did not receive pointcloud");
+        //ROS_INFO("did not receive pointcloud");
         ros::spinOnce();
         ros::Duration(1.0).sleep();
     }
-    ROS_INFO("got a pointcloud.");
+    //ROS_INFO("got a pointcloud.");
 
 
     tf::StampedTransform tf_sensor_frame_to_torso_frame; //use this to transform sensor frame to torso frame
@@ -43,7 +43,7 @@ void Block_detection::update_kinect_points()
 
     // let's warm up the tf_listener, to make sure it get's all the transforms it needs to avoid crashing:
     bool tferr = true;
-    ROS_INFO("waiting for tf between kinect_pc_frame and torso...");
+    //ROS_INFO("waiting for tf between kinect_pc_frame and torso...");
     while (tferr) {
         tferr = false;
         try {
@@ -57,13 +57,13 @@ void Block_detection::update_kinect_points()
             ros::spinOnce();
         }
     }
-    ROS_INFO("tf is good"); //  tf-listener found a complete chain from sensor to world; ready to roll
+    //ROS_INFO("tf is good"); //  tf-listener found a complete chain from sensor to world; ready to roll
 
     Eigen::Affine3f A_sensor_wrt_torso;
     A_sensor_wrt_torso = cwru_pcl_utils.transformTFToEigen(tf_sensor_frame_to_torso_frame);
 
     transform_clr_kinect_cloud(A_sensor_wrt_torso);
-    ROS_INFO("transformed color kinect points");
+    //ROS_INFO("transformed color kinect points");
     set_got_kinect_cloud(); // turn off the camera
 }
 
@@ -75,7 +75,7 @@ void Block_detection::transform_clr_kinect_cloud(Eigen::Affine3f A) {
     transformed_pclKinect_clr_ptr_->width = pclKinect_clr_ptr_->width;
     transformed_pclKinect_clr_ptr_->height = pclKinect_clr_ptr_->height;
     int npts = pclKinect_clr_ptr_->points.size();
-    cout << "transforming npts = " << npts << endl;
+    //cout << "transforming npts = " << npts << endl;
     transformed_pclKinect_clr_ptr_->points.resize(npts);
 
     //somewhat odd notation: getVector3fMap() reading OR WRITING points from/to a pointcloud, with conversions to/from Eigen
@@ -308,6 +308,102 @@ bool Block_detection::find_block()
     cwru_pcl_utils.fit_points_to_plane(display_ptr_, Block_Normal, block_dist);
     Block_Major = cwru_pcl_utils.get_major_axis();
     ROS_INFO_STREAM("The major vector of the block's top:"<<Block_Major.transpose());
+
+    return true;
+}
+
+
+int Block_detection::find_block_by_color() {
+
+    update_kinect_points();
+
+    int npts = transformed_pclKinect_clr_ptr_->points.size();
+    vector<int> index;
+    Eigen::Vector3f pt;
+    vector<double> color_err_RGB;
+    double color_err;
+    color_err = 255;
+    color_err_RGB.resize(3);
+    index.clear();
+    ROS_INFO("Try to find the stool. Wait");
+    for (int i = 0; i < npts; i++) 
+    {
+        pt = transformed_pclKinect_clr_ptr_->points[i].getVector3fMap();
+        color_err_RGB[0] = abs(StoolColor_R - transformed_pclKinect_clr_ptr_->points[i].r);
+        color_err_RGB[1] = abs(StoolColor_G - transformed_pclKinect_clr_ptr_->points[i].g);
+        color_err_RGB[2] = abs(StoolColor_B - transformed_pclKinect_clr_ptr_->points[i].b);
+
+        // ROS_INFO("%f", pt[2]);
+
+        if (abs(pt[2] - roughHeight) < HeightRange) 
+        {
+            if (color_err_RGB[0] < Maxerr && color_err_RGB[1] < Maxerr && color_err_RGB[2] < Maxerr) 
+            {
+                index.push_back(i);
+
+            }
+            // index.push_back(i);
+        }
+    }
+    if (index.size() < 20) 
+    {
+        ROS_INFO("Stool not found");
+        return 0;
+    }
+    int n_display = index.size();
+    ROS_INFO("found out %d points on the stool", n_display);
+
+
+    display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
+    display_ptr_->is_dense = transformed_pclKinect_clr_ptr_->is_dense;
+    display_ptr_->width = n_display; 
+    display_ptr_->height = transformed_pclKinect_clr_ptr_->height;
+    display_ptr_->points.resize(n_display);
+    for (int i = 0; i < n_display; i++) {
+        display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
+    }
+    ROS_INFO("display_point conversed.");
+
+    // display_points(*display_ptr_); 
+    
+    StoolCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
+    StoolHeight = StoolCentroid(2);
+
+    ROS_INFO_STREAM("Centroid of the Stool"<<StoolCentroid.transpose());
+    ROS_INFO_STREAM("Height of the stool"<<StoolHeight);
+    
+    return true;
+}
+
+bool Block_detection::find_hand()
+{
+    update_kinect_points();
+    int npts = transformed_pclKinect_clr_ptr_->points.size();
+    Eigen::Vector3f pt;
+    Eigen::Vector3f dist;
+    vector<int> index;
+    index.clear();
+    double distance = 1;
+    BlockColor<<0,0,0;
+    for (int i = 0; i < npts; i++) 
+    {
+        pt = transformed_pclKinect_clr_ptr_->points[i].getVector3fMap();
+        dist = pt - StoolCentroid;
+        dist[2]=0;
+        distance = dist.norm();
+        // if(distance < StoolRadius)
+            if(pt[2]>(StoolHeight+0.10))
+            {
+                index.push_back(i);
+            }
+    }
+    int n_block_points = index.size();
+    if(n_block_points<10)
+    {
+        ROS_INFO("No hand found");
+        return 0;
+    }
+    ROS_INFO("Hand found");
 
     return true;
 }
