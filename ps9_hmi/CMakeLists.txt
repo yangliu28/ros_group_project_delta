@@ -13,11 +13,15 @@ catkin_simple()
 
 # Libraries
 # cs_add_library(my_lib src/my_lib.cpp)   
+cs_add_library(ps9_hmi_hand_detect src/ps9_hmi_hand_detect.cpp)
 
 # Executables
 # cs_add_executable(example src/example.cpp)
 # target_link_library(example my_lib)
 
+cs_add_executable(ps9_hmi_hand_detect_test src/ps9_hmi_hand_detect_test.cpp)
+
+target_link_libraries(ps9_hmi_hand_detect_test ps9_hmi_hand_detect ${catkin_LIBRARIES})
+
 cs_install()
 cs_export()
-    
