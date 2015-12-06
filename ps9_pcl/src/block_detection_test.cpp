@@ -9,6 +9,7 @@
 #include <tf/transform_broadcaster.h>
 
 Eigen::Vector3f red(230,60,60);
+geometry_msgs::Pose pose;
 
 int main(int argc, char** argv) 
 {
@@ -24,6 +25,8 @@ int main(int argc, char** argv)
         if (cwru_pcl_utils.find_stool())
         {
             cwru_pcl_utils.find_block();
+            pose = cwru_pcl_utils.find_pose();
+            ROS_INFO(pose);
         }
         // cwru_pcl_utils.find_stool();
         // cwru_pcl_utils.find_block();
