@@ -78,11 +78,11 @@
 <build_depend>ps9_gripper_control</build_depend>
 <run_depend>ps9_gripper_control</run_depend>
 
-<build_depend>ps9_arm_motion</build_depend>
-<run_depend>ps9_arm_motion</run_depend>
+<build_depend>ps9_pcl</build_depend>
+<run_depend>ps9_pcl</run_depend>
 
-<build_depend>ps9_pcl_hmi</build_depend>
-<run_depend>ps9_pcl_hmi</run_depend>
+<build_depend>ps9_hmi</build_depend>
+<run_depend>ps9_hmi</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
