@@ -23,6 +23,14 @@ pclKinect_clr_ptr_(new PointCloud<pcl::PointXYZRGB>), transformed_pclKinect_clr_
     pointcloud_subscriber_ = nodehandle->subscribe("/kinect/depth/points", 1, &Block_detection::KinectCameraCB, this);
     got_kinect_cloud_ = false;
     
+    BlockPose.position.x = 0;
+    BlockPose.position.y = 0;
+    BlockPose.position.z = 0;
+    BlockPose.orientation.x = 0;
+    BlockPose.orientation.y = 0;
+    BlockPose.orientation.z = 0;
+    BlockPose.orientation.w = 0;
+
 }
 
 
@@ -57,7 +65,7 @@ void Block_detection::update_kinect_points()
             ros::spinOnce();
         }
     }
-    //ROS_INFO("tf is good"); //  tf-listener found a complete chain from sensor to world; ready to roll
+    ROS_INFO("tf is good"); //  tf-listener found a complete chain from sensor to world; ready to roll
 
     Eigen::Affine3f A_sensor_wrt_torso;
     A_sensor_wrt_torso = cwru_pcl_utils.transformTFToEigen(tf_sensor_frame_to_torso_frame);
@@ -254,7 +262,7 @@ int Block_detection::find_block()
         dist[2]=0;
         distance = dist.norm();
         if(distance < StoolRadius)
-            if(pt[2]>(StoolHeight+0.03) && pt[2]<BlockMaxHeight)
+            if(pt[2]>(StoolHeight+0.02) && pt[2]<BlockMaxHeight)
             {
                 index.push_back(i);
 
@@ -282,6 +290,31 @@ int Block_detection::find_block()
     BlockColor/=n_color_points;
     //ROS_INFO_STREAM("The block color:"<<BlockColor.transpose());
 
+
+
+    
+    display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
+    display_ptr_->is_dense = transformed_pclKinect_clr_ptr_->is_dense;
+    display_ptr_->width = n_block_points;
+    display_ptr_->height = transformed_pclKinect_clr_ptr_->height;
+    display_ptr_->points.resize(n_block_points);
+    for (int i = 0; i < n_block_points; i++) 
+    {
+        display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
+    }
+    // display_points(*display_ptr_);
+    
+    BlockCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
+    ROS_INFO_STREAM("The centroid of the block:"<<BlockCentroid.transpose());
+
+
+    
+    double block_dist;
+    cwru_pcl_utils.fit_points_to_plane(display_ptr_, Block_Normal, block_dist);
+    Block_Major = cwru_pcl_utils.get_major_axis();
+    //ROS_INFO_STREAM("The major vector of the block's top:"<<Block_Major.transpose());
+
+    //return true;
     if (BlockColor[0] >= BlockColor[1] && BlockColor[0] >= BlockColor[2])
     {
         ROS_INFO("block is red");
@@ -297,30 +330,6 @@ int Block_detection::find_block()
         ROS_INFO("block is blue");
         return 3;
     }
-
-    
-    display_ptr_->header = transformed_pclKinect_clr_ptr_->header;
-    display_ptr_->is_dense = transformed_pclKinect_clr_ptr_->is_dense;
-    display_ptr_->width = n_block_points;
-    display_ptr_->height = transformed_pclKinect_clr_ptr_->height;
-    display_ptr_->points.resize(n_block_points);
-    for (int i = 0; i < n_block_points; i++) 
-    {
-        display_ptr_->points[i].getVector3fMap() = transformed_pclKinect_clr_ptr_->points[index[i]].getVector3fMap();
-    }
-    // display_points(*display_ptr_);
-    
-    Eigen::Vector3f BlockCentroid;
-    BlockCentroid =cwru_pcl_utils.compute_centroid(display_ptr_);
-    //ROS_INFO_STREAM("The centroid of the block:"<<BlockCentroid.transpose());
-
-    
-    double block_dist;
-    cwru_pcl_utils.fit_points_to_plane(display_ptr_, Block_Normal, block_dist);
-    Block_Major = cwru_pcl_utils.get_major_axis();
-    //ROS_INFO_STREAM("The major vector of the block's top:"<<Block_Major.transpose());
-
-    //return true;
 }
 
 
@@ -417,12 +426,38 @@ bool Block_detection::find_hand()
     return true;
 }
 
+// geometry_msgs::Pose Block_detection::find_pose()
+// {
+//     geometry_msgs::Pose pose;
+//     pose.position.x = BlockCentroid[0];
+//     pose.position.y = BlockCentroid[1];
+//     pose.position.z = BlockCentroid[2];
+
+//     double delta;
+
+//     Eigen::Vector3f unit_axis_x(1,0,0);
+//     double sin_delta = Block_Major.dot(unit_axis_x);
+//     delta = acos(sin_delta);
+
+//     pose.orientation.x = 0;
+//     pose.orientation.y = 0;
+//     pose.orientation.z = 0;
+//     pose.orientation.w = cos(delta/2);
+    
+//     // pose.orientation.x = 0;
+//     // pose.orientation.y = 0;
+//     // pose.orientation.z = sin(delta/2);
+//     // pose.orientation.w = cos(delta/2);
+
+//     return pose;
+
+// }
+
 geometry_msgs::Pose Block_detection::find_pose()
 {
-    geometry_msgs::Pose pose;
-    pose.position.x = BlockCentroid[0];
-    pose.position.y = BlockCentroid[1];
-    pose.position.z = BlockCentroid[2];
+    BlockPose.position.x = BlockCentroid[0];
+    BlockPose.position.y = BlockCentroid[1];
+    BlockPose.position.z = BlockCentroid[2];
 
     double delta;
 
@@ -430,21 +465,21 @@ geometry_msgs::Pose Block_detection::find_pose()
     double sin_delta = Block_Major.dot(unit_axis_x);
     delta = acos(sin_delta);
 
-    pose.orientation.x = 0;
-    pose.orientation.y = 0;
-    pose.orientation.z = 0;
-    pose.orientation.w = cos(delta/2);
+    BlockPose.orientation.x = 0;
+    BlockPose.orientation.y = 0;
+    BlockPose.orientation.z = 0;
+    BlockPose.orientation.w = cos(delta/2);
     
     // pose.orientation.x = 0;
     // pose.orientation.y = 0;
     // pose.orientation.z = sin(delta/2);
     // pose.orientation.w = cos(delta/2);
 
-    return pose;
+    return BlockPose;
 
 }
 
-Eigen::Vector3d Block_detection::fnd_block_color()
+Eigen::Vector3d Block_detection::find_block_color()
 {
     return BlockColor;
 }

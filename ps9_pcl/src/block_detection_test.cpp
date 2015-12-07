@@ -25,11 +25,21 @@ int main(int argc, char** argv)
         if (cwru_pcl_utils.find_stool())
         {
             cwru_pcl_utils.find_block();
+
+            // ROS_INFO_STREAM("block position: " << 
+            //     pose.position.x << ", " <<
+            //     pose.position.y << ", " <<
+            //     pose.position.z);
+            // ROS_INFO_STREAM("block orientation(w): " << pose.orientation.w);
+
             pose = cwru_pcl_utils.find_pose();
+
             ROS_INFO_STREAM("block position: " << 
                 pose.position.x << ", " <<
                 pose.position.y << ", " <<
                 pose.position.z);
+            ROS_INFO_STREAM("block orientation(w): " << pose.orientation.w);
+
         }
         // cwru_pcl_utils.find_stool();
         // cwru_pcl_utils.find_block();
@@ -40,6 +50,6 @@ int main(int argc, char** argv)
         ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
-	
+	return 0;
 }
 

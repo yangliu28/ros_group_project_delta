@@ -1,5 +1,6 @@
 // main program for libraries in this assignment to be used collaborately
 
+#include <math.h>
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
@@ -35,7 +36,7 @@ int main(int argc, char** argv) {
     // instantiate an arm motion object
     ArmMotionCommander arm_motion_commander(&nh);
     // instantiate an human hand detection object
-    HumanMachineInterface human_machine_interface(&nh);
+    // HumanMachineInterface human_machine_interface(&nh);
 
 
 
@@ -53,33 +54,32 @@ int main(int argc, char** argv) {
 
     // preparation work for yale gripper
     // check if gripper is working by a grasp move
-    ROS_INFO("test the gripper state by open-close-open precedure");
-    baxter_gripper_control.open_hand_w_position();  // no delay between these moves
-    baxter_gripper_control.close_hand_w_torque();
-    baxter_gripper_control.open_hand_w_position();
-    ros::Duration(1.0).sleep();
+    ROS_INFO("test the gripper state by close-open precedure");
+    // baxter_gripper_control.close_hand_w_torque();
+    // baxter_gripper_control.open_hand_w_position();
+    // ros::Duration(1.0).sleep();
 
     // preparation work for arm motion commander
-    tf::StampedTransform tf_sensor_frame_to_torso_frame;  // transform from sensor frame to torso frame
-    tf::TransformListener tf_listener;  // start a transform listener
-    // warm up the tf_listener
-    bool tferr = true;
-    ROS_INFO("waiting for tf between kinect_pc_frame and torso...");
-    while (tferr) {
-        tferr = false;
-        try {
-            // The direction of the transform returned will be from the target_frame to the source_frame. 
-            // Which if applied to data, will transform data in the source_frame into the target_frame.
-            // See tf/CoordinateFrameConventions#Transform_Direction
-            tf_listener.lookupTransform("torso", "kinect_pc_frame", ros::Time(0), tf_sensor_frame_to_torso_frame);
-        } catch (tf::TransformException &exception) {
-            ROS_ERROR("%s", exception.what());
-            tferr = true;
-            ros::Duration(0.5).sleep();  // sleep for half a second
-            ros::spinOnce();
-        }
-    }
-    ROS_INFO("tf is good");  // tf-listener found a complete chain from sensor to world
+    // tf::StampedTransform tf_sensor_frame_to_torso_frame;  // transform from sensor frame to torso frame
+    // tf::TransformListener tf_listener;  // start a transform listener
+    // // warm up the tf_listener
+    // bool tferr = true;
+    // ROS_INFO("waiting for tf between kinect_pc_frame and torso...");
+    // while (tferr) {
+    //     tferr = false;
+    //     try {
+    //         // The direction of the transform returned will be from the target_frame to the source_frame. 
+    //         // Which if applied to data, will transform data in the source_frame into the target_frame.
+    //         // See tf/CoordinateFrameConventions#Transform_Direction
+    //         tf_listener.lookupTransform("torso", "camera_rgb_optical_frame", ros::Time(0), tf_sensor_frame_to_torso_frame);
+    //     } catch (tf::TransformException &exception) {
+    //         ROS_ERROR("%s", exception.what());
+    //         tferr = true;
+    //         ros::Duration(0.5).sleep();  // sleep for half a second
+    //         ros::spinOnce();
+    //     }
+    // }
+    // ROS_INFO("tf is good");  // tf-listener found a complete chain from sensor to world
 
 
 
@@ -90,6 +90,12 @@ int main(int argc, char** argv) {
     geometry_msgs::Pose block_pose;  // pose of the block
     int block_color;  // 1: red, 2: green, 3: blue
     double block_orientation;  // block orientation in torso frame
+
+    ROS_INFO_STREAM("block position: " << 
+        block_pose.position.x << ", " <<
+        block_pose.position.y << ", " <<
+        block_pose.position.z);
+    ROS_INFO_STREAM("block orientation(w): " << block_pose.orientation.w);
 
     // for gripper control
     // none
@@ -153,32 +159,41 @@ int main(int argc, char** argv) {
             // human hand signal 2: not present
         // these signals indicate a permit of performing block detection and baxter movements
 
-        b_human_hand_present = human_machine_interface.get_human_hand();
-        while (!b_human_hand_present) {
-            // wait for 0.5 second and re-check
-            ros::Duration(0.5).sleep();
-            b_human_hand_present = human_machine_interface.get_human_hand();
-            ROS_INFO("waiting for human hand signal 1");
-        }
-        // if here, get an human hand presence signal
-        ROS_INFO("human hand signal 1 detected");
+        // ROS_INFO("***** msg from HMI *****");
+        // b_human_hand_present = human_machine_interface.get_human_hand();
+        // ROS_INFO("***** msg from HMI *****");
+        // while (!b_human_hand_present) {
+        //     // wait for 0.5 second and re-check
+        //     ros::Duration(0.5).sleep();
+        //     ROS_INFO("***** msg from HMI *****");
+        //     b_human_hand_present = human_machine_interface.get_human_hand();
+        //     ROS_INFO("***** msg from HMI *****");
+        //     ROS_INFO("waiting for human hand signal 1");
+        // }
+        // // if here, get an human hand presence signal
+        // ROS_INFO("human hand signal 1 detected");
 
-        int time_count = 0;  // time count for hand presence
-        while (b_human_hand_present && time_count<10) {
-            ros::Duration(1.0).sleep();
-            b_human_hand_present = human_machine_interface.get_human_hand();
-            time_count = time_count + 1;  // usually an human interaction is within 10 seconds
-            // this will avoid program accidently waits here forever
-        }
+        // int time_count = 0;  // time count for hand presence
+        // while (b_human_hand_present && time_count<10) {
+        //     ros::Duration(1.0).sleep();
+        //     ROS_INFO("***** msg from HMI *****");
+        //     b_human_hand_present = human_machine_interface.get_human_hand();
+        //     ROS_INFO("***** msg from HMI *****");
+        //     time_count = time_count + 1;  // usually an human interaction is within 10 seconds
+        //     // this will avoid program accidently waits here forever
+        // }
 
-        if (!b_human_hand_present) {  // the while-loop exits because hand signal is detected
-            b_continue_blocks_operation = true;
-            ROS_INFO("human hand signal 2 detected");
-        }
-        else {  // the while-loop exits because time is out
-            b_continue_blocks_operation = false;
-            ROS_ERROR("time out on human hand signal 2");
-        }
+        // if (!b_human_hand_present) {  // the while-loop exits because hand signal is detected
+        //     b_continue_blocks_operation = true;
+        //     ROS_INFO("human hand signal 2 detected");
+        // }
+        // else {  // the while-loop exits because time is out
+        //     b_continue_blocks_operation = false;
+        //     ROS_ERROR("time out on human hand signal 2");
+        // }
+
+        // for debug of following movements
+        b_continue_blocks_operation = true;
 
         // continue operation on blocks
         if (b_continue_blocks_operation) {
@@ -187,20 +202,28 @@ int main(int argc, char** argv) {
             // begin trying to find the blocks
             if (block_detection.find_stool()) {
                 // stool is within range
+                block_color = 0;
                 block_color = block_detection.find_block();  // get the color of the block
+                ROS_INFO_STREAM("block color code: " << block_color);
                 // if 0, no block is find
                 if (block_color) {
                     ROS_INFO("stool is found, block is found");
                     ROS_INFO_STREAM("color of the block: " << block_color << " (1-red, 2-green, 3-blue)");
                     // get block position and orientation
-                    block_pose = block_detection.find_pose();  // calculate blcok pose
-                    block_orientation = block_pose.orientation.w;
-                    block_orientation = 2 * acos(block_orientation);  // angle value
                     ROS_INFO_STREAM("block position: " << 
                         block_pose.position.x << ", " <<
                         block_pose.position.y << ", " <<
                         block_pose.position.z);
-                    ROS_INFO_STREAM("block orientation: " << block_orientation);
+                    ROS_INFO_STREAM("block orientation(w): " << block_pose.orientation.w);
+                    block_pose = block_detection.find_pose();  // calculate block pose
+                    // block_orientation = block_pose.orientation.w;
+                    // block_orientation = 2 * acos(block_orientation);  // angle value
+                    ROS_INFO_STREAM("block position: " << 
+                        block_pose.position.x << ", " <<
+                        block_pose.position.y << ", " <<
+                        block_pose.position.z);
+                    ROS_INFO_STREAM("block orientation(w): " << block_pose.orientation.w);
+                    // ROS_INFO_STREAM("block orientation: " << block_orientation);
 
                     // prepare the general arm position for detected block, Affine_des_gripper
                     // the orientation
@@ -223,7 +246,11 @@ int main(int argc, char** argv) {
                     rt_tool_pose_upper.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
 
                     // 1.move the gripper to the upper area of the block
+                    ROS_INFO_STREAM("");  // blank line here
                     ROS_INFO("move 1: move the gripper to the upper area of the block");
+                    ROS_INFO_STREAM("des pos: " << rt_tool_pose_upper.pose.position.x
+                        << ", " << rt_tool_pose_upper.pose.position.y
+                        << ", " << rt_tool_pose_upper.pose.position.z);
                     // send move plan request
                     rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_upper);
                     if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
@@ -231,47 +258,66 @@ int main(int argc, char** argv) {
                         rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
                     }
                     else {
-                        ROS_WARN("Cartesian path to desired pose not achievable: No1");
+                        ROS_WARN("Cartesian path to desired pose not achievable");
                     }
 
                     // 2.move the gripper to the origin of the block
+                    ROS_INFO_STREAM("");  // blank line here
                     ROS_INFO("move 2: move the gripper to the origin of the block");
+                    ROS_INFO_STREAM("des pos: " << rt_tool_pose_origin.pose.position.x
+                        << ", " << rt_tool_pose_origin.pose.position.y
+                        << ", " << rt_tool_pose_origin.pose.position.z);
                     rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_origin);
                     if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
                         // send command to execute planned motion
                         rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
                     }
                     else {
-                        ROS_WARN("Cartesian path to desired pose not achievable: No2");
+                        ROS_WARN("Cartesian path to desired pose not achievable");
                     }
 
                     // 3.grasp the block with the gripper
+                    ROS_INFO_STREAM("");  // blank line here
                     ROS_INFO("move 3: grasp the block with the gripper");
                     baxter_gripper_control.close_hand_w_torque();
 
                     // 4.move the gripper to the upper area of the block
+                    ROS_INFO_STREAM("");  // blank line here
                     ROS_INFO("move 4: move the gripper to the upper area of the block");
+                    ROS_INFO_STREAM("des pos: " << rt_tool_pose_upper.pose.position.x
+                        << ", " << rt_tool_pose_upper.pose.position.y
+                        << ", " << rt_tool_pose_upper.pose.position.z);
                     rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_upper);
                     if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
                         // send command to execute planned motion
                         rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
                     }
                     else {
-                        ROS_WARN("Cartesian path to desired pose not achievable: No4");
+                        ROS_WARN("Cartesian path to desired pose not achievable");
                     }
 
                     // 5.move the gripper to destination according to block color
+                    ROS_INFO_STREAM("");  // blank line here
                     ROS_INFO("move 5: move the gripper to destination according to block color");
                     // set planed motion according to block color
                     switch (block_color) {
                         case 1:  // color is red
                             rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_red_des);
+                            ROS_INFO_STREAM("des pos: " << rt_tool_pose_red_des.pose.position.x
+                                << ", " << rt_tool_pose_red_des.pose.position.y
+                                << ", " << rt_tool_pose_red_des.pose.position.z);
                             break;
                         case 2:  // color is green
                             rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_green_des);
+                            ROS_INFO_STREAM("des pos: " << rt_tool_pose_green_des.pose.position.x
+                                << ", " << rt_tool_pose_green_des.pose.position.y
+                                << ", " << rt_tool_pose_green_des.pose.position.z);
                             break;
                         case 3:  // color is blue                    
                             rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_blue_des);
+                            ROS_INFO_STREAM("des pos: " << rt_tool_pose_blue_des.pose.position.x
+                                << ", " << rt_tool_pose_blue_des.pose.position.y
+                                << ", " << rt_tool_pose_blue_des.pose.position.z);
                             break;
                     }
                     if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
@@ -279,14 +325,17 @@ int main(int argc, char** argv) {
                         rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
                     }
                     else {
-                        ROS_WARN("Cartesian path to desired pose not achievable: No5");
+                        ROS_WARN("Cartesian path to desired pose not achievable");
                     }
+                    rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
 
                     // 6.release the block
+                    ROS_INFO_STREAM("");  // blank line here
                     ROS_INFO("move 6: release the block");
                     baxter_gripper_control.open_hand_w_position();
 
                     // 7.move the gripper to pre-pose
+                    ROS_INFO_STREAM("");  // blank line here
                     ROS_INFO("move 7: move the gripper to pre-pose");
                     rtn_val = arm_motion_commander.plan_move_to_pre_pose();
                     if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
@@ -294,7 +343,7 @@ int main(int argc, char** argv) {
                         rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
                     }
                     else {
-                        ROS_WARN("Cartesian path to desired pose not achievable: No7");
+                        ROS_WARN("Cartesian path to desired pose not achievable");
                     }
                 }
                 else
@@ -306,5 +355,6 @@ int main(int argc, char** argv) {
         }
         ros::spinOnce();  // let variables to update, if there is any
     }
+    return 0;
 }
 

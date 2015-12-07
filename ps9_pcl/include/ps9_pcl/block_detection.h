@@ -46,7 +46,7 @@ public:
 
     bool find_hand();
     geometry_msgs::Pose find_pose();
-    Eigen::Vector3d fnd_block_color(); 
+    Eigen::Vector3d find_block_color(); 
 
     CwruPclUtils cwru_pcl_utils;
 
@@ -58,7 +58,7 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr pclKinect_clr_ptr_;   
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_pclKinect_clr_ptr_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr display_ptr_;
-    ros::Publisher points_publisher;  
+    ros::Publisher points_publisher;
     geometry_msgs::Pose BlockPose;
     Eigen::Vector3d BlockColor;
 

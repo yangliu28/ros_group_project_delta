@@ -212,7 +212,7 @@ int ArmMotionCommander::rt_arm_execute_planned_path(void) {
     ROS_INFO("requesting execution of planned path");
     cart_goal_.command_code = cwru_action::cwru_baxter_cart_moveGoal::RT_ARM_EXECUTE_PLANNED_PATH;
     cart_move_action_client_.sendGoal(cart_goal_, boost::bind(&ArmMotionCommander::doneCb_, this, _1, _2)); // we could also name additional callback functions here, if desired
-    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+2.0));
+    finished_before_timeout_ = cart_move_action_client_.waitForResult(ros::Duration(computed_arrival_time_+12.0));
     if (!finished_before_timeout_) {
         ROS_WARN("did not complete move in expected time");
         return (int) cwru_action::cwru_baxter_cart_moveResult::NOT_FINISHED_BEFORE_TIMEOUT;  

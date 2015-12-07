@@ -16,8 +16,10 @@ catkin_simple()
 
 # Executables
 cs_add_executable(ps9_main src/ps9_main.cpp)
+cs_add_executable(ps9_main_ src/ps9_main.cpp)
 # this is weird
 target_link_libraries(ps9_main block_detection ${catkin_LIBRARIES})
+target_link_libraries(ps9_main_ block_detection ${catkin_LIBRARIES})
 
 cs_install()
 cs_export()
