@@ -286,7 +286,7 @@ int Block_detection::find_block()
         return 0;
     }
     //ROS_INFO("There is a block with %d points", n_block_points);
-    int n_color_points;
+    int n_color_points = index_color.size();
     BlockColor/=n_color_points;
     //ROS_INFO_STREAM("The block color:"<<BlockColor.transpose());
 
