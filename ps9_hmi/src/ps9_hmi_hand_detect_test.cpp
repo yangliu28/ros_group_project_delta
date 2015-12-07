@@ -23,13 +23,9 @@ int main(int argc, char** argv) {
 	while(ros::ok()) {
 		if(hmi.get_human_hand()) {
 			std::cout << "There is a human hand present." << endl;
-			ROS_INFO("The height detected is %f", hmi.get_hand_height());
-			ROS_INFO("The ratio of blocked points is %f", hmi.get_blocked_ratio());
 			return 0;
 		} else {
 			std::cout << "There is no hand detected." << endl;
-			ROS_INFO("The detection height is %f", hmi.get_hand_height());
-			ROS_INFO("The ratio of blocked points is %f", hmi.get_blocked_ratio());
 		}
 		ros::spinOnce();
 		ros::Duration(1.0).sleep();
