@@ -10,6 +10,7 @@
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 
+//COMMENT TEST
 int main(int argc, char** argv) {
 	ros::init(argc, argv, "ps9_hmi_hand_detect_test");
 	ros::NodeHandle nh;
@@ -17,15 +18,14 @@ int main(int argc, char** argv) {
 	//create an hmi class object
 	HumanMachineInterface hmi(&nh);
 
+	ROS_INFO("HMI testing is about to start.");
+
 	while(ros::ok()) {
 		if(hmi.get_human_hand()) {
 			std::cout << "There is a human hand present." << endl;
-			std::cout << "The height detected is " << hmi.get_hand_height() << endl;
-			std::cout << "The ratio of blocked points is " << hmi.get_blocked_ratio() << endl;
+			return 0;
 		} else {
 			std::cout << "There is no hand detected." << endl;
-			std::cout << "The detection height is " << hmi.get_hand_height() << endl;
-			std::cout << "The ratio of blocked points is " << hmi.get_blocked_ratio() << endl;
 		}
 		ros::spinOnce();
 		ros::Duration(1.0).sleep();
