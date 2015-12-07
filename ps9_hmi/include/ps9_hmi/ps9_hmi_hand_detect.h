@@ -15,15 +15,18 @@
 //the minimum height for a point to be a "hand"
 #define HandMinHeight 0.1
 //flex value for hand curvature / angling
-#define HandErr 0.01
+#define HandErr 0.2
 
-//flex values for hand-height detection
-#define HeightRough 0.2
-#define HeightErr 0.05
+//flex values for hand-height object detection
+#define HeightRough 0.1742
+#define HeightSpread 0.1
 
-//values for finding all cloud points
-#define GeneralHeight 0.2
-#define GeneralSpread 1.0
+//values for finding all cloud points in detection zone
+#define AllHeight 0.0
+#define AllSpread 100.0
+
+//range for hand detection from baxter
+#define InterfaceRange 0.35
 
 class HumanMachineInterface {
 public:
@@ -35,7 +38,7 @@ public:
 	//function for returning hand detection state
 	bool get_human_hand();
 
-	//getter methods for private values
+	//public getter methods for private values
 	double get_hand_height() { return hand_height_; };
 	double get_blocked_ratio() { return blocked_ratio_; };
 
@@ -43,14 +46,17 @@ public:
 
 private:
 	//Kinect usage
+	tf::TransformListener tf_listener_;
 	void get_kinect_snapshot_();
-	void convert_rgb_to_xyz_(PointCloud<pcl::PointXYZRGB> inputCloud, PointCloud<pcl::PointXYZ> outputCloud);
+	void convert_rgb_to_xyz_(PointCloud<pcl::PointXYZRGB> inputCloud, PointCloud<pcl::PointXYZ>::Ptr outputCloud);
+	int count_points_inside_range_(PointCloud<pcl::PointXYZRGB> pcl, double range);
+	
 
     //measured hand values
 	bool hand_present_;
 	double hand_height_;
 	double blocked_ratio_;
-	Eigen::Vector3f hand_centroid_;
+	Eigen::Vector3f detection_centroid_;
 
     //values for hand detection criteria
 	double detect_radius_;
