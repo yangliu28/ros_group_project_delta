@@ -29,6 +29,7 @@ void Gripper::open_hand_w_position() {
 	cmd_msg.data = 3000;
 	// publish operation mode and command to the motor node
 	torque_toggle_.publish(toggle_msg);
+	ros::Duration(0.2).sleep();  // wait for command been sent
 	dynamixel_publisher_.publish(cmd_msg);
 	ros::Duration(5.0).sleep();  // leave 5 second to finish
 }
@@ -52,6 +53,7 @@ void Gripper::close_hand_w_torque() {
 	cmd_msg.data = 80;
 	// publish operation mode and command to the motor node
 	torque_toggle_.publish(toggle_msg);
+	ros::Duration(0.2).sleep();
 	dynamixel_publisher_.publish(cmd_msg);
 	ros::Duration(5.0).sleep();  // leave 5 second to finish
 }

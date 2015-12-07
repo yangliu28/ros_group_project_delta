@@ -114,17 +114,17 @@ int main(int argc, char** argv) {
     Rmat.col(0) = xvec_des;
     Rmat.col(1) = yvec_des;
     Rmat.col(2) = zvec_des;
-    Affine_des_gripper.linear()=Rmat;
+    Affine_des_gripper.linear() = Rmat;
     // position, change the position for different colors here
     // for red
-    origin_des[0] = 0.7;
-    origin_des[1] = 0.0;
+    origin_des[0] = 0.4;
+    origin_des[1] = 0.3;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_red_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // for green
-    origin_des[0] = 0.4;
-    origin_des[1] = 0.3;
+    origin_des[0] = 0.7;
+    origin_des[1] = 0.0;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_green_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
@@ -209,7 +209,7 @@ int main(int argc, char** argv) {
                     Rmat.col(0) = xvec_des;
                     Rmat.col(1) = yvec_des;
                     Rmat.col(2) = zvec_des;// the z direction of the gripper
-                    Affine_des_gripper.linear()=Rmat;
+                    Affine_des_gripper.linear() = Rmat;
                     // the position
                     origin_des[0] = block_pose.position.x;
                     origin_des[1] = block_pose.position.y;
@@ -302,8 +302,8 @@ int main(int argc, char** argv) {
             }
             else
                 ROS_WARN("stool is not found");
+        ros::Duration(1.0).sleep();  // sleep 1 second each time    
         }
-        ros::Duration(1.0).sleep();  // sleep 1 second each time
         ros::spinOnce();  // let variables to update, if there is any
     }
 }

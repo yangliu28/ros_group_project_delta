@@ -26,7 +26,10 @@ int main(int argc, char** argv)
         {
             cwru_pcl_utils.find_block();
             pose = cwru_pcl_utils.find_pose();
-            // ROS_INFO(pose);
+            ROS_INFO_STREAM("block position: " << 
+                pose.position.x << ", " <<
+                pose.position.y << ", " <<
+                pose.position.z);
         }
         // cwru_pcl_utils.find_stool();
         // cwru_pcl_utils.find_block();
@@ -34,7 +37,7 @@ int main(int argc, char** argv)
 
         // cwru_pcl_utils.find_block_by_color(red);
 
-        ros::Duration(1).sleep();
+        ros::Duration(0.5).sleep();
         ros::spinOnce();
     }
 	
