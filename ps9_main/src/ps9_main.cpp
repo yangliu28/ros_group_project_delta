@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
+#include <cwru_action/cwru_baxter_cart_moveAction.h>
 // eigen lilbraries to be used in position calculation of arm motion
 #include <Eigen/Eigen>
 #include <Eigen/Dense>
@@ -15,7 +16,7 @@
 // for block detection with pcl
 #include <ps9_pcl/block_detection.h>
 // for human hand detection in hmi
-// #include <ps9_hmi/ps9_hmi_lib.h>
+#include <ps9_hmi/ps9_hmi_hand_detect.h>
 
 
 int main(int argc, char** argv) {
@@ -34,7 +35,7 @@ int main(int argc, char** argv) {
     // instantiate an arm motion object
     ArmMotionCommander arm_motion_commander(&nh);
     // instantiate an human hand detection object
-    // HumanMachineInterface human_machine_interface;
+    HumanMachineInterface human_machine_interface(&nh);
 
 
 
@@ -52,9 +53,10 @@ int main(int argc, char** argv) {
 
     // preparation work for yale gripper
     // check if gripper is working by a grasp move
-    baxter_gripper_control.open_hand();  // no delay between these moves
-    baxter_gripper_control.close_hand();
-    baxter_gripper_control.open_hand();
+    ROS_INFO("test the gripper state by open-close-open precedure");
+    baxter_gripper_control.open_hand_w_position();  // no delay between these moves
+    baxter_gripper_control.close_hand_w_torque();
+    baxter_gripper_control.open_hand_w_position();
     ros::Duration(1.0).sleep();
 
     // preparation work for arm motion commander
@@ -115,20 +117,20 @@ int main(int argc, char** argv) {
     Affine_des_gripper.linear()=Rmat;
     // position, change the position for different colors here
     // for red
-    origin_des[0] = 0.8;
-    origin_des[1] = 0.5;
+    origin_des[0] = 0.7;
+    origin_des[1] = 0.0;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_red_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // for green
-    origin_des[0] = 0.8;
-    origin_des[1] = 0.5;
+    origin_des[0] = 0.4;
+    origin_des[1] = 0.3;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_green_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // for blue
-    origin_des[0] = 0.8;
-    origin_des[1] = 0.5;
+    origin_des[0] = 0.4;
+    origin_des[1] = -0.3;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_blue_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
@@ -151,11 +153,11 @@ int main(int argc, char** argv) {
             // human hand signal 2: not present
         // these signals indicate a permit of performing block detection and baxter movements
 
-        b_human_hand_present = block_detection.find_hand();
+        b_human_hand_present = human_machine_interface.get_human_hand();
         while (!b_human_hand_present) {
             // wait for 0.5 second and re-check
             ros::Duration(0.5).sleep();
-            b_human_hand_present = block_detection.find_hand();
+            b_human_hand_present = human_machine_interface.get_human_hand();
             ROS_INFO("waiting for human hand signal 1");
         }
         // if here, get an human hand presence signal
@@ -164,7 +166,7 @@ int main(int argc, char** argv) {
         int time_count = 0;  // time count for hand presence
         while (b_human_hand_present && time_count<10) {
             ros::Duration(1.0).sleep();
-            b_human_hand_present = block_detection.find_hand();
+            b_human_hand_present = human_machine_interface.get_human_hand();
             time_count = time_count + 1;  // usually an human interaction is within 10 seconds
             // this will avoid program accidently waits here forever
         }
@@ -189,13 +191,18 @@ int main(int argc, char** argv) {
                 // if 0, no block is find
                 if (block_color) {
                     ROS_INFO("stool is found, block is found");
-                    ROS_INFO("continue...");
+                    ROS_INFO_STREAM("color of the block: " << block_color << " (1-red, 2-green, 3-blue)");
                     // get block position and orientation
                     block_pose = block_detection.find_pose();  // calculate blcok pose
                     block_orientation = block_pose.orientation.w;
                     block_orientation = 2 * acos(block_orientation);  // angle value
+                    ROS_INFO_STREAM("block position: " << 
+                        block_pose.position.x << ", " <<
+                        block_pose.position.y << ", " <<
+                        block_pose.position.z);
+                    ROS_INFO_STREAM("block orientation: " << block_orientation);
 
-                    // prepare the general arm position, Affine_des_gripper
+                    // prepare the general arm position for detected block, Affine_des_gripper
                     // the orientation
                     xvec_des << cos(block_orientation), sin(block_orientation), 0;
                     yvec_des = zvec_des.cross(xvec_des);
@@ -216,50 +223,85 @@ int main(int argc, char** argv) {
                     rt_tool_pose_upper.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
 
                     // 1.move the gripper to the upper area of the block
+                    ROS_INFO("move 1: move the gripper to the upper area of the block");
                     // send move plan request
                     rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_upper);
-                    // execute planned motion
-                    rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
+                        // send command to execute planned motion
+                        rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    }
+                    else {
+                        ROS_WARN("Cartesian path to desired pose not achievable: No1");
+                    }
 
                     // 2.move the gripper to the origin of the block
+                    ROS_INFO("move 2: move the gripper to the origin of the block");
                     rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_origin);
-                    rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
+                        // send command to execute planned motion
+                        rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    }
+                    else {
+                        ROS_WARN("Cartesian path to desired pose not achievable: No2");
+                    }
 
                     // 3.grasp the block with the gripper
-                    baxter_gripper_control.close_hand();
+                    ROS_INFO("move 3: grasp the block with the gripper");
+                    baxter_gripper_control.close_hand_w_torque();
 
                     // 4.move the gripper to the upper area of the block
+                    ROS_INFO("move 4: move the gripper to the upper area of the block");
                     rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_upper);
-                    rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
+                        // send command to execute planned motion
+                        rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    }
+                    else {
+                        ROS_WARN("Cartesian path to desired pose not achievable: No4");
+                    }
 
                     // 5.move the gripper to destination according to block color
+                    ROS_INFO("move 5: move the gripper to destination according to block color");
+                    // set planed motion according to block color
                     switch (block_color) {
                         case 1:  // color is red
                             rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_red_des);
-                            rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
                             break;
                         case 2:  // color is green
                             rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_green_des);
-                            rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
                             break;
                         case 3:  // color is blue                    
                             rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_blue_des);
-                            rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
                             break;
+                    }
+                    if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
+                        // send command to execute planned motion
+                        rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    }
+                    else {
+                        ROS_WARN("Cartesian path to desired pose not achievable: No5");
                     }
 
                     // 6.release the block
-                    baxter_gripper_control.open_hand();
+                    ROS_INFO("move 6: release the block");
+                    baxter_gripper_control.open_hand_w_position();
 
                     // 7.move the gripper to pre-pose
+                    ROS_INFO("move 7: move the gripper to pre-pose");
                     rtn_val = arm_motion_commander.plan_move_to_pre_pose();
-                    rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    if (rtn_val == cwru_action::cwru_baxter_cart_moveResult::SUCCESS) { 
+                        // send command to execute planned motion
+                        rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    }
+                    else {
+                        ROS_WARN("Cartesian path to desired pose not achievable: No7");
+                    }
                 }
                 else
-                    ROS_ERROR("stool is found, block is not found");
+                    ROS_WARN("stool is found, block is not found");
             }
             else
-                ROS_ERROR("stool is not found");
+                ROS_WARN("stool is not found");
         }
         ros::Duration(1.0).sleep();  // sleep 1 second each time
         ros::spinOnce();  // let variables to update, if there is any
