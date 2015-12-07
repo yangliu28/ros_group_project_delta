@@ -1,22 +1,31 @@
 #ifndef PS9_GRIPPER_CONTROL_H_
 #define PS9_GRIPPER_CONTROL_H_
 
+#include <ros/ros.h>
+#include <std_msgs/Int16.h>
+#include <std_msgs/Bool.h>
 
-
-#include <ros/ros.h> //generic C++ stuff
 class Gripper
 {
-	public:
-		Gripper(ros::NodeHandle* nodehandle); //constructor
-		
-		//functions are open hand and close hand
-		void open_hand();
-		void close_hand();
+public:
+    Gripper(ros::NodeHandle* nodehandle);  // constructor
+	
+    // functions are open hand and close hand
+    void open_hand_w_position();
+    // void close_hand_w_position();
+    void close_hand_w_torque();
 
-	private:
-   		ros::NodeHandle nh_; 
-   		ros::Publisher ang_publisher_; 
+private:
+    ros::NodeHandle nh_;
+    ros::Publisher dynamixel_publisher_;
+    ros::Publisher torque_toggle_;
 
-}; // note: a class definition requires a semicolon at the end of the definition
+    std_msgs::Int16 cmd_msg;
+    std_msgs::Bool toggle_msg;
+
+    int current;  // used to keep track of where the hand currently is
+
+};
 
 #endif  // this closes the header-include trick...ALWAYS need one of these to match #ifndef
+
