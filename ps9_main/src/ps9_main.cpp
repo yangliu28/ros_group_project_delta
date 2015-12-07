@@ -115,21 +115,21 @@ int main(int argc, char** argv) {
     Affine_des_gripper.linear()=Rmat;
     // position, change the position for different colors here
     // for red
-    origin_des.col(0) = 0.8;
-    origin_des.col(1) = 0.5;
-    origin_des.col(2) = 0.2;
+    origin_des[0] = 0.8;
+    origin_des[1] = 0.5;
+    origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_red_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // for green
-    origin_des.col(0) = 0.8;
-    origin_des.col(1) = 0.5;
-    origin_des.col(2) = 0.2;
+    origin_des[0] = 0.8;
+    origin_des[1] = 0.5;
+    origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_green_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // for blue
-    origin_des.col(0) = 0.8;
-    origin_des.col(1) = 0.5;
-    origin_des.col(2) = 0.2;
+    origin_des[0] = 0.8;
+    origin_des[1] = 0.5;
+    origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_blue_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // pre movement, move to pre-define pose in joint space
@@ -189,6 +189,7 @@ int main(int argc, char** argv) {
                 // if 0, no block is find
                 if (block_color) {
                     ROS_INFO("stool is found, block is found");
+                    ROS_INFO("continue...");
                     // get block position and orientation
                     block_pose = block_detection.find_pose();  // calculate blcok pose
                     block_orientation = block_pose.orientation.w;
@@ -203,14 +204,14 @@ int main(int argc, char** argv) {
                     Rmat.col(2) = zvec_des;// the z direction of the gripper
                     Affine_des_gripper.linear()=Rmat;
                     // the position
-                    origin_des.col(0) = block_pose.position.x;
-                    origin_des.col(1) = block_pose.position.y;
-                    origin_des.col(2) = block_pose.position.z - 0.015;  // block height is 0.03
+                    origin_des[0] = block_pose.position.x;
+                    origin_des[1] = block_pose.position.y;
+                    origin_des[2] = block_pose.position.z - 0.015;  // block height is 0.03
                     Affine_des_gripper.translation() = origin_des;
                     // for rt_tool_pose_origin
                     rt_tool_pose_origin.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
                     // for rt_tool_pose_upper
-                    origin_des.col(2) = block_pose.position.z + 0.1;  // the upper area of block
+                    origin_des[2] = block_pose.position.z + 0.1;  // the upper area of block
                     Affine_des_gripper.translation() = origin_des;
                     rt_tool_pose_upper.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
 
@@ -232,16 +233,20 @@ int main(int argc, char** argv) {
                     rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
 
                     // 5.move the gripper to destination according to block color
-                    switch block_color:
-                    case 1:  // color is red
-                        rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_red_des);
-                        rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
-                    case 2:  // color is green
-                        rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_green_des);
-                        rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
-                    case 3:  // color is blue                    
-                        rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_blue_des);
-                        rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                    switch (block_color) {
+                        case 1:  // color is red
+                            rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_red_des);
+                            rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                            break;
+                        case 2:  // color is green
+                            rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_green_des);
+                            rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                            break;
+                        case 3:  // color is blue                    
+                            rtn_val = arm_motion_commander.rt_arm_plan_path_current_to_goal_pose(rt_tool_pose_blue_des);
+                            rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
+                            break;
+                    }
 
                     // 6.release the block
                     baxter_gripper_control.open_hand();
