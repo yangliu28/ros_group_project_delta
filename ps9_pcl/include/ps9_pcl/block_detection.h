@@ -45,8 +45,8 @@ public:
     bool find_floor();
 
     bool find_hand();
-    geometry_msgs::Pose find_pose(); 
-    Eigen::Vector3d getColor(); 
+    geometry_msgs::Pose find_pose();
+    Eigen::Vector3d fnd_block_color(); 
 
     CwruPclUtils cwru_pcl_utils;
 

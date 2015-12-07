@@ -238,8 +238,13 @@ int Block_detection::find_block()
     int npts = transformed_pclKinect_clr_ptr_->points.size();
     Eigen::Vector3f pt;
     Eigen::Vector3f dist;
+
     vector<int> index;
+    std::vector<int> index_color;
+
     index.clear();
+    index_color.clear();
+
     double distance = 1;
     BlockColor<<0,0,0;
     for (int i = 0; i < npts; i++) 
@@ -252,9 +257,18 @@ int Block_detection::find_block()
             if(pt[2]>(StoolHeight+0.03) && pt[2]<BlockMaxHeight)
             {
                 index.push_back(i);
-                BlockColor(0)+=transformed_pclKinect_clr_ptr_->points[i].r;
-                BlockColor(1)+=transformed_pclKinect_clr_ptr_->points[i].g;
-                BlockColor(2)+=transformed_pclKinect_clr_ptr_->points[i].b;
+
+                double color_range_R = abs(transformed_pclKinect_clr_ptr_->points[i].r - StoolColor_R);
+                double color_range_G = abs(transformed_pclKinect_clr_ptr_->points[i].g -StoolColor_G);
+                double color_range_B = abs(transformed_pclKinect_clr_ptr_->points[i].b - StoolColor_B);
+
+                if(color_range_R >= 20 && color_range_G >= 20 && color_range_B >= 20)
+                {
+                    index_color.push_back(i);
+                    BlockColor(0)+=transformed_pclKinect_clr_ptr_->points[i].r;
+                    BlockColor(1)+=transformed_pclKinect_clr_ptr_->points[i].g;
+                    BlockColor(2)+=transformed_pclKinect_clr_ptr_->points[i].b;
+                }
             }
     }
     int n_block_points = index.size();
@@ -264,7 +278,8 @@ int Block_detection::find_block()
         return 0;
     }
     //ROS_INFO("There is a block with %d points", n_block_points);
-    BlockColor/=n_block_points;
+    int n_color_points;
+    BlockColor/=n_color_points;
     //ROS_INFO_STREAM("The block color:"<<BlockColor.transpose());
 
     if (BlockColor[0] >= BlockColor[1] && BlockColor[0] >= BlockColor[2])
@@ -427,4 +442,9 @@ geometry_msgs::Pose Block_detection::find_pose()
 
     return pose;
 
+}
+
+Eigen::Vector3d Block_detection::fnd_block_color()
+{
+    return BlockColor;
 }
