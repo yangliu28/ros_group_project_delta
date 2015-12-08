@@ -19,7 +19,14 @@
 // for human hand detection in hmi
 #include <ps9_hmi/ps9_hmi_hand_detect.h>
 
-const double z_offset = 0.2;
+// const double z_offset = 0.275;
+// const double z_offset = 0.285;  // too high
+// const double z_offset = 0.280;  // too low
+
+// const double z_offset = 0.2;  // too high
+// const double z_offset = 0.15;  // a little high
+// const double z_offset = 0.12;  // almost
+const double z_offset = 0.118;
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "ps9_main");
@@ -57,7 +64,7 @@ int main(int argc, char** argv) {
     // check if gripper is working by a grasp move
     ROS_INFO("test the gripper state by close-open precedure");
     // baxter_gripper_control.close_hand_w_torque();
-    // baxter_gripper_control.open_hand_w_position();
+    baxter_gripper_control.open_hand_w_position();
     // ros::Duration(1.0).sleep();
 
     // preparation work for arm motion commander
@@ -210,14 +217,8 @@ int main(int argc, char** argv) {
                 if (block_color) {
                     ROS_INFO("stool is found, block is found");
                     ROS_INFO_STREAM("color of the block: " << block_color << " (1-red, 2-green, 3-blue)");
-                    // get block position and orientation
-                    ROS_INFO_STREAM("block position: " << 
-                        block_pose.position.x << ", " <<
-                        block_pose.position.y << ", " <<
-                        block_pose.position.z);
-                    ROS_INFO_STREAM("block orientation(w): " << block_pose.orientation.w);
                     block_pose = block_detection.find_pose();  // calculate block pose
-                    block_pose.position.z += z_offset;
+                    block_pose.position.z = block_pose.position.z + z_offset;
                     block_orientation = block_pose.orientation.w;
                     block_orientation = 2 * acos(block_orientation);  // angle value
                     ROS_INFO_STREAM("block position: " << 
@@ -229,11 +230,11 @@ int main(int argc, char** argv) {
 
                     // prepare the general arm position for detected block, Affine_des_gripper
                     // the orientation
-                    // xvec_des << cos(block_orientation), sin(block_orientation), 0;
-                    // yvec_des = zvec_des.cross(xvec_des);
+                    xvec_des << cos(block_orientation), sin(block_orientation), 0;
+                    yvec_des = zvec_des.cross(xvec_des);
                     // rotate 90 degree, compare to above
-                    yvec_des << cos(block_orientation), sin(block_orientation), 0;
-                    xvec_des = zvec_des.cross(xvec_des);
+                    // yvec_des << cos(block_orientation), sin(block_orientation), 0;
+                    // xvec_des = zvec_des.cross(xvec_des);
                     Rmat.col(0) = xvec_des;
                     Rmat.col(1) = yvec_des;
                     Rmat.col(2) = zvec_des;// the z direction of the gripper
@@ -241,7 +242,7 @@ int main(int argc, char** argv) {
                     // the position
                     origin_des[0] = block_pose.position.x;
                     origin_des[1] = block_pose.position.y;
-                    origin_des[2] = block_pose.position.z - 0.015;  // block height is 0.03
+                    origin_des[2] = block_pose.position.z - 0.01;  // block height is 0.03
                     Affine_des_gripper.translation() = origin_des;
                     // for rt_tool_pose_origin
                     rt_tool_pose_origin.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
@@ -332,7 +333,6 @@ int main(int argc, char** argv) {
                     else {
                         ROS_WARN("Cartesian path to desired pose not achievable");
                     }
-                    rtn_val = arm_motion_commander.rt_arm_execute_planned_path();
 
                     // 6.release the block
                     ROS_INFO_STREAM("");  // blank line here

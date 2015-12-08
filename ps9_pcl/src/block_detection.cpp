@@ -173,7 +173,7 @@ bool Block_detection::find_stool() {
     StoolHeight = StoolCentroid(2);
 
     // ROS_INFO_STREAM("Centroid of the Stool"<<StoolCentroid.transpose());
-    // ROS_INFO_STREAM("Height of the stool"<<StoolHeight);
+    ROS_INFO_STREAM("Height of the stool"<<StoolHeight);
     
     return true;
 }
