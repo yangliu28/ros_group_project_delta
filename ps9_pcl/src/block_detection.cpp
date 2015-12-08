@@ -479,6 +479,17 @@ geometry_msgs::Pose Block_detection::find_pose()
 
 }
 
+Eigen::Vector3f Block_detection::get_major_axis_unit_vector() {
+    double magnitude;
+    magnitude = sqrt( pow(Block_Major[0], 2) + pow(Block_Major[1], 2) );
+    Eigen::Vector3f unit_vector;
+    unit_vector[0] = Block_Major[0] / magnitude;
+    unit_vector[1] = Block_Major[1] / magnitude;
+    unit_vector[2] = 0;
+
+    return unit_vector;
+}
+
 Eigen::Vector3d Block_detection::find_block_color()
 {
     return BlockColor;

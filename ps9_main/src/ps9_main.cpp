@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     // instantiate an arm motion object
     ArmMotionCommander arm_motion_commander(&nh);
     // instantiate an human hand detection object
-    // HumanMachineInterface human_machine_interface(&nh);
+    HumanMachineInterface human_machine_interface(&nh);
 
 
 
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_red_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // for green
-    origin_des[0] = 0.8;
+    origin_des[0] = 0.55;
     origin_des[1] = 0.0;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
@@ -167,41 +167,41 @@ int main(int argc, char** argv) {
             // human hand signal 2: not present
         // these signals indicate a permit of performing block detection and baxter movements
 
-        // ROS_INFO("***** msg from HMI *****");
-        // b_human_hand_present = human_machine_interface.get_human_hand();
-        // ROS_INFO("***** msg from HMI *****");
-        // while (!b_human_hand_present) {
-        //     // wait for 0.5 second and re-check
-        //     ros::Duration(0.5).sleep();
-        //     ROS_INFO("***** msg from HMI *****");
-        //     b_human_hand_present = human_machine_interface.get_human_hand();
-        //     ROS_INFO("***** msg from HMI *****");
-        //     ROS_INFO("waiting for human hand signal 1");
-        // }
-        // // if here, get an human hand presence signal
-        // ROS_INFO("human hand signal 1 detected");
+        ROS_INFO("***** msg from HMI *****");
+        b_human_hand_present = human_machine_interface.get_human_hand();
+        ROS_INFO("***** msg from HMI *****");
+        while (!b_human_hand_present) {
+            // wait for 0.5 second and re-check
+            ros::Duration(0.5).sleep();
+            ROS_INFO("***** msg from HMI *****");
+            b_human_hand_present = human_machine_interface.get_human_hand();
+            ROS_INFO("***** msg from HMI *****");
+            ROS_INFO("waiting for human hand signal 1");
+        }
+        // if here, get an human hand presence signal
+        ROS_INFO("human hand signal 1 detected");
 
-        // int time_count = 0;  // time count for hand presence
-        // while (b_human_hand_present && time_count<10) {
-        //     ros::Duration(1.0).sleep();
-        //     ROS_INFO("***** msg from HMI *****");
-        //     b_human_hand_present = human_machine_interface.get_human_hand();
-        //     ROS_INFO("***** msg from HMI *****");
-        //     time_count = time_count + 1;  // usually an human interaction is within 10 seconds
-        //     // this will avoid program accidently waits here forever
-        // }
+        int time_count = 0;  // time count for hand presence
+        while (b_human_hand_present && time_count<10) {
+            ros::Duration(1.0).sleep();
+            ROS_INFO("***** msg from HMI *****");
+            b_human_hand_present = human_machine_interface.get_human_hand();
+            ROS_INFO("***** msg from HMI *****");
+            time_count = time_count + 1;  // usually an human interaction is within 10 seconds
+            // this will avoid program accidently waits here forever
+        }
 
-        // if (!b_human_hand_present) {  // the while-loop exits because hand signal is detected
-        //     b_continue_blocks_operation = true;
-        //     ROS_INFO("human hand signal 2 detected");
-        // }
-        // else {  // the while-loop exits because time is out
-        //     b_continue_blocks_operation = false;
-        //     ROS_ERROR("time out on human hand signal 2");
-        // }
+        if (!b_human_hand_present) {  // the while-loop exits because hand signal is detected
+            b_continue_blocks_operation = true;
+            ROS_INFO("human hand signal 2 detected");
+        }
+        else {  // the while-loop exits because time is out
+            b_continue_blocks_operation = false;
+            ROS_ERROR("time out on human hand signal 2");
+        }
 
         // for debug of following movements
-        b_continue_blocks_operation = true;
+        // b_continue_blocks_operation = true;
 
         // continue operation on blocks
         if (b_continue_blocks_operation) {
@@ -230,7 +230,9 @@ int main(int argc, char** argv) {
 
                     // prepare the general arm position for detected block, Affine_des_gripper
                     // the orientation
-                    xvec_des << cos(block_orientation), sin(block_orientation), 0;
+                    Eigen::Vector3f block_axis = block_detection.get_major_axis_unit_vector();
+                    xvec_des << block_axis[0], block_axis[1], 0;
+
                     yvec_des = zvec_des.cross(xvec_des);
                     // rotate 90 degree, compare to above
                     // yvec_des << cos(block_orientation), sin(block_orientation), 0;

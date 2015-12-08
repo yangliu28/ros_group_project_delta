@@ -9,7 +9,7 @@
 HumanMachineInterface::HumanMachineInterface(ros::NodeHandle* nh) : cwru_pcl_utils(nh) {
 
 	//required ratio of present points to consider the hand present
-	threshold_detection_ratio_ = 0.3;
+	threshold_detection_ratio_ = 0.2;
 
 	//persistent transform listener
 	tf::TransformListener tf_listener_;
@@ -20,9 +20,9 @@ void HumanMachineInterface::get_kinect_snapshot_() {
 	cwru_pcl_utils.reset_got_kinect_cloud();
 	//timeout counter for 10 seconds to wait on kinect
 	int timeout = 0;
-	ROS_INFO("HMI is getting a new kinect point cloud.");
+	// ROS_INFO("HMI is getting a new kinect point cloud.");
 	while(!cwru_pcl_utils.got_kinect_cloud() && timeout < 10) {
-		ROS_INFO("HMI is waiting on kinect point cloud.");
+		// ROS_INFO("HMI is waiting on kinect point cloud.");
 		ros::spinOnce();
 		ros::Duration(1.0).sleep();
 		timeout++;
@@ -34,7 +34,7 @@ void HumanMachineInterface::get_kinect_snapshot_() {
 		return;
 	}
 
-	ROS_INFO("HMI is now processing a kinect point cloud.");
+	// ROS_INFO("HMI is now processing a kinect point cloud.");
 
 	//transform objects to move kinect pcl to base frame
 	tf::StampedTransform tf_kinect_to_base;
@@ -59,7 +59,7 @@ void HumanMachineInterface::get_kinect_snapshot_() {
 	eigen_kinect_to_base = cwru_pcl_utils.transformTFToEigen(tf_kinect_to_base);
 
 	cwru_pcl_utils.transform_kinect_cloud(eigen_kinect_to_base);
-	ROS_INFO("HMI has updated and processed a current kinect point cloud.");
+	// ROS_INFO("HMI has updated and processed a current kinect point cloud.");
 }
 
 //private function: prunes list of indices selecting those within a certain x,y planar range
