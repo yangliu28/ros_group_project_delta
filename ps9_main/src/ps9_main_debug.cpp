@@ -22,7 +22,7 @@
 
 #include <ps9_pcl/block_detection.h>
 
-geometry_msgs::Pose block_pose;  // pose of the block
+
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "ps9_main_debug");
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     // VARIABLES TO BE USED IN THE LOOP
 
     // for point cloud sensor
-    
+    geometry_msgs::Pose block_pose;  // pose of the block
     int block_color;  // 1: red, 2: green, 3: blue
     double block_orientation;  // block orientation in torso frame
 

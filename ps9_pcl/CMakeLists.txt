@@ -130,7 +130,7 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(block_detection
+add_library(ps9_pcl
 	src/block_detection.cpp
 )
 
@@ -147,8 +147,8 @@ add_executable(block_detection_test src/block_detection_test.cpp)
 # add_dependencies(ps9_pcl_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(block_detection cwru_pcl_utils ${catkin_LIBRARIES})
-target_link_libraries(block_detection_test block_detection ${catkin_LIBRARIES})
+target_link_libraries(ps9_pcl cwru_pcl_utils ${catkin_LIBRARIES})
+target_link_libraries(block_detection_test ps9_pcl ${catkin_LIBRARIES})
 
 #############
 ## Install ##

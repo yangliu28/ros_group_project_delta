@@ -19,6 +19,7 @@
 // for human hand detection in hmi
 #include <ps9_hmi/ps9_hmi_hand_detect.h>
 
+const double z_offset = 0.2;
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "ps9_main");
@@ -123,19 +124,19 @@ int main(int argc, char** argv) {
     Affine_des_gripper.linear() = Rmat;
     // position, change the position for different colors here
     // for red
-    origin_des[0] = 0.4;
+    origin_des[0] = 0.5;
     origin_des[1] = 0.3;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_red_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // for green
-    origin_des[0] = 0.7;
+    origin_des[0] = 0.8;
     origin_des[1] = 0.0;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_green_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // for blue
-    origin_des[0] = 0.4;
+    origin_des[0] = 0.5;
     origin_des[1] = -0.3;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
@@ -216,6 +217,7 @@ int main(int argc, char** argv) {
                         block_pose.position.z);
                     ROS_INFO_STREAM("block orientation(w): " << block_pose.orientation.w);
                     block_pose = block_detection.find_pose();  // calculate block pose
+                    block_pose.position.z += z_offset;
                     // block_orientation = block_pose.orientation.w;
                     // block_orientation = 2 * acos(block_orientation);  // angle value
                     ROS_INFO_STREAM("block position: " << 

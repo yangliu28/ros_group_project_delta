@@ -13,7 +13,7 @@ cart_move_action_client_("cartMoveActionServer", true) { // constructor
         server_exists = cart_move_action_client_.waitForServer(ros::Duration(0.5)); // 
         ros::spinOnce();
         ros::Duration(0.5).sleep();
-        ROS_INFO("retrying...");
+        ROS_INFO("retrying..#*.");
     }
     ROS_INFO("connected to action server"); // if here, then we connected to the server; 
     

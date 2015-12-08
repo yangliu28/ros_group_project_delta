@@ -1,5 +1,28 @@
 <launch>
 
+<!-- enable the robot for motion commands-->
+<node pkg="baxter_tools" type="enable_robot.py" name="enable_robot" args="-e"/>
+
+<!-- trajectory interpolator action server: -->
+<node pkg="baxter_traj_streamer" type="traj_interpolator_as" name="traj_interpolator_as"/>
+
+<!-- Cartesian motion action server -->
+<node pkg="baxter_cartesian_moves" type="baxter_cart_move_as" name="baxter_cart_move_as"/>
+
+<!-- tool transform publisher -->
+<include file="$(find cwru_baxter_launch)/yale_gripper_xform.launch"/>
+
+<!-- dynamixel motor node -->
+<!-- <node pkg="baxter_gripper" type="dynamixel_motor_node" name="dynamixel_motor_node"/> -->
+
+<!-- kinect sensor -->
+<!-- <include file="$(find ps9_pcl)/kinect_.launch"/> -->
+
+<!-- rviz -->
+<node pkg="rviz" type="rviz" name="rviz"/>
+
+<!-- main program -->
+<node pkg="ps9_main" type="ps9_main" name="ps9_main"/>
 
 </launch>
 
