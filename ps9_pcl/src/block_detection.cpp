@@ -462,8 +462,8 @@ geometry_msgs::Pose Block_detection::find_pose()
     double delta;
 
     Eigen::Vector3f unit_axis_x(1,0,0);
-    double sin_delta = Block_Major.dot(unit_axis_x);
-    delta = acos(sin_delta);
+    double cos_delta = Block_Major.dot(unit_axis_x);
+    delta = acos(cos_delta);
 
     BlockPose.orientation.x = 0;
     BlockPose.orientation.y = 0;

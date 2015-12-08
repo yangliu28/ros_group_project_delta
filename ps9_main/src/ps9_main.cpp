@@ -218,8 +218,8 @@ int main(int argc, char** argv) {
                     ROS_INFO_STREAM("block orientation(w): " << block_pose.orientation.w);
                     block_pose = block_detection.find_pose();  // calculate block pose
                     block_pose.position.z += z_offset;
-                    // block_orientation = block_pose.orientation.w;
-                    // block_orientation = 2 * acos(block_orientation);  // angle value
+                    block_orientation = block_pose.orientation.w;
+                    block_orientation = 2 * acos(block_orientation);  // angle value
                     ROS_INFO_STREAM("block position: " << 
                         block_pose.position.x << ", " <<
                         block_pose.position.y << ", " <<
