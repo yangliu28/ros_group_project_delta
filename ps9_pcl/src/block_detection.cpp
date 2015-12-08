@@ -461,14 +461,17 @@ geometry_msgs::Pose Block_detection::find_pose()
 
     double delta;
 
-    Eigen::Vector3f unit_axis_x(1,0,0);
-    double cos_delta = Block_Major.dot(unit_axis_x);
+    Eigen::Vector3f unit_axis_y(0,1,0);
+    double cos_delta = Block_Major.dot(unit_axis_y);
     delta = acos(cos_delta);
 
     BlockPose.orientation.x = 0;
     BlockPose.orientation.y = 0;
     BlockPose.orientation.z = 0;
-    BlockPose.orientation.w = cos(delta/2);
+
+    //addition of pi/2 to the angle aligns the hand with Block's major axis
+    //otherwise, hand orients to minor axis
+    BlockPose.orientation.w = cos(delta/2 + M_PI/2);
     
     // pose.orientation.x = 0;
     // pose.orientation.y = 0;

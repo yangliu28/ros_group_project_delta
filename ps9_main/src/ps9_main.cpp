@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
     Affine_des_gripper.translation() = origin_des;
     rt_tool_pose_red_des.pose = arm_motion_commander.transformEigenAffine3dToPose(Affine_des_gripper);
     // for green
-    origin_des[0] = 0.55;
+    origin_des[0] = 0.45;
     origin_des[1] = 0.0;
     origin_des[2] = 0.2;
     Affine_des_gripper.translation() = origin_des;
@@ -230,16 +230,20 @@ int main(int argc, char** argv) {
 
                     // prepare the general arm position for detected block, Affine_des_gripper
                     // the orientation
-                    Eigen::Vector3f block_axis = block_detection.get_major_axis_unit_vector();
-                    xvec_des << block_axis[0], block_axis[1], 0;
+                    // Eigen::Vector3f block_axis = block_detection.get_major_axis_unit_vector();
+                    // yvec_des << block_axis[0], block_axis[1], 0;
+                    // xvec_des = zvec_des.cross(yvec_des);
 
+                    xvec_des << cos(block_orientation), sin(block_orientation), 0;
                     yvec_des = zvec_des.cross(xvec_des);
-                    // rotate 90 degree, compare to above
-                    // yvec_des << cos(block_orientation), sin(block_orientation), 0;
-                    // xvec_des = zvec_des.cross(xvec_des);
+
+
                     Rmat.col(0) = xvec_des;
                     Rmat.col(1) = yvec_des;
                     Rmat.col(2) = zvec_des;// the z direction of the gripper
+                    ROS_INFO_STREAM("xvec_des: " << xvec_des[0] << ", " << xvec_des[1] << ", " << xvec_des[2]);
+                    ROS_INFO_STREAM("yvec_des: " << yvec_des[0] << ", " << yvec_des[1] << ", " << yvec_des[2]);
+                    ROS_INFO_STREAM("zvec_des: " << zvec_des[0] << ", " << zvec_des[1] << ", " << zvec_des[2]);
                     Affine_des_gripper.linear() = Rmat;
                     // the position
                     origin_des[0] = block_pose.position.x;
@@ -268,6 +272,7 @@ int main(int argc, char** argv) {
                     else {
                         ROS_WARN("Cartesian path to desired pose not achievable");
                     }
+                    ros::Duration(0.25).sleep();
 
                     // 2.move the gripper to the origin of the block
                     ROS_INFO_STREAM("");  // blank line here
@@ -288,6 +293,7 @@ int main(int argc, char** argv) {
                     ROS_INFO_STREAM("");  // blank line here
                     ROS_INFO("move 3: grasp the block with the gripper");
                     baxter_gripper_control.close_hand_w_torque();
+                    ros::Duration(0.25).sleep();
 
                     // 4.move the gripper to the upper area of the block
                     ROS_INFO_STREAM("");  // blank line here
@@ -303,6 +309,7 @@ int main(int argc, char** argv) {
                     else {
                         ROS_WARN("Cartesian path to desired pose not achievable");
                     }
+                    ros::Duration(0.25).sleep();
 
                     // 5.move the gripper to destination according to block color
                     ROS_INFO_STREAM("");  // blank line here
