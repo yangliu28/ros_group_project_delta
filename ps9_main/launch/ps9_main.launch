@@ -16,13 +16,14 @@
 <node pkg="baxter_gripper" type="dynamixel_motor_node" name="dynamixel_motor_node"/>
 
 <!-- kinect sensor -->
-<include file="$(find ps9_pcl)/kinect_.launch"/>
+<include file="$(find ps9_pcl)/launch/kinect_.launch"/>
 
 <!-- rviz -->
 <node pkg="rviz" type="rviz" name="rviz"/>
 
 <!-- main program -->
-<node pkg="ps9_main" type="ps9_main" name="ps9_main"/>
+<!-- somehow it has to be run in the ros_ws/build/ros_group_delta/ps9_main, and run with ./ps9_main -->
+<!-- <node pkg="ps9_main" type="ps9_main" name="ps9_main"/> -->
 
 </launch>
 

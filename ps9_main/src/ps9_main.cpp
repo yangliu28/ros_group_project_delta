@@ -229,8 +229,11 @@ int main(int argc, char** argv) {
 
                     // prepare the general arm position for detected block, Affine_des_gripper
                     // the orientation
-                    xvec_des << cos(block_orientation), sin(block_orientation), 0;
-                    yvec_des = zvec_des.cross(xvec_des);
+                    // xvec_des << cos(block_orientation), sin(block_orientation), 0;
+                    // yvec_des = zvec_des.cross(xvec_des);
+                    // rotate 90 degree, compare to above
+                    yvec_des << cos(block_orientation), sin(block_orientation), 0;
+                    xvec_des = zvec_des.cross(xvec_des);
                     Rmat.col(0) = xvec_des;
                     Rmat.col(1) = yvec_des;
                     Rmat.col(2) = zvec_des;// the z direction of the gripper
