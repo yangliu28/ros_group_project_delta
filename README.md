@@ -65,11 +65,11 @@ Start the ROS motor driver:
 
 `rosrun rviz rviz`
 
-7) If all the above goes right, start our main program:
+7) If all the above goes right, run the main program:
 
 `rosrun ps9_main ps9_main`
 
-8) 3 to 7 is just for debug, alternative, skip these and run our launch file:
+8) 3 to 7 are just for debug, alternatively, skip these and run our launch file:
 
 `roslaunch ps9_main ps9_main.launch`
 
