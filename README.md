@@ -67,11 +67,11 @@ Start the ROS motor driver:
 
 7) If all the above goes right, start our main program:
 
-`rosrun ps9_main `
+`rosrun ps9_main ps9_main`
 
 8) 3 to 7 is just for debug, alternative, skip these and run our launch file:
 
-`roslaunch ps9_main `
+`roslaunch ps9_main ps9_main.launch`
 
 ## Standard operating precedure of HMI
 1) After everything is running, the right arm of baxter will move to pre-pose and go to idle mode, waiting for instructions.
