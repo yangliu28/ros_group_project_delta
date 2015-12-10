@@ -48,6 +48,8 @@ public:
     geometry_msgs::Pose find_pose();
     Eigen::Vector3d find_block_color(); 
 
+    Eigen::Vector3f get_major_axis_unit_vector();
+
     CwruPclUtils cwru_pcl_utils;
 
 private:
