@@ -12,7 +12,6 @@ public:
 	
     // functions are open hand and close hand
     void open_hand_w_position();
-    // void close_hand_w_position();
     void close_hand_w_torque();
 
 private:
@@ -27,5 +26,5 @@ private:
 
 };
 
-#endif  // this closes the header-include trick...ALWAYS need one of these to match #ifndef
+#endif
 

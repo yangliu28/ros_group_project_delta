@@ -9,19 +9,7 @@ Gripper::Gripper(ros::NodeHandle* nodehandle) : nh_(*nodehandle) {
 	// initialize and keep track of current position
 	current = 3000;
 }
-
-// void Gripper::open_hand_w_position() {
-// 	ROS_INFO("opening the gripper with position command...");
-// 	// sleep, so that gripper does not open and close too quickly
-// 	for(int i = current; i>=3000; i--){
-// 		cmd_msg.data = i;
-// 		dynamixel_publisher_.publish(cmd_msg);
-// 		ros::Duration(.0005).sleep(); 
-// 	}
-// 	// keep track of new position
-// 	current = 3000;
-// }
-
+//open hand to the open position
 void Gripper::open_hand_w_position() {
 	ROS_INFO("opening the gripper with position command...");
 	// prepare message
@@ -34,6 +22,8 @@ void Gripper::open_hand_w_position() {
 	ros::Duration(5.0).sleep();  // leave 5 second to finish
 }
 
+//original
+//closing hand with position is not working
 // void Gripper::close_hand_w_position() {
 // 	ROS_INFO("closing the gripper with position command...");
 // 	// sleep, so that gripper does not open and close too quickly
@@ -46,6 +36,7 @@ void Gripper::open_hand_w_position() {
 // 	current = 3800;
 // }
 
+//need to use torque to properly close hand with block
 void Gripper::close_hand_w_torque() {
 	ROS_INFO("closing the gripper with torque command...");
 	// prepare message

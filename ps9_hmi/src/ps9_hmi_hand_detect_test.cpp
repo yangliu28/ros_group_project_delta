@@ -1,5 +1,5 @@
 //test file for hmi ps9 final group project
-//
+//part of ps9_hmi
 //written by Matthew Dobrowsky
 
 #include <ros/ros.h>
@@ -10,7 +10,6 @@
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 
-//COMMENT TEST
 int main(int argc, char** argv) {
 	ros::init(argc, argv, "ps9_hmi_hand_detect_test");
 	ros::NodeHandle nh;
@@ -22,40 +21,15 @@ int main(int argc, char** argv) {
 
 	while(ros::ok()) {
 		if(hmi.get_human_hand()) {
+			//exits test program once a hand is found
 			std::cout << "There is a human hand present." << endl;
 			return 0;
 		} else {
+			//will continue to execute test if no hand is found
 			std::cout << "There is no hand detected." << endl;
 		}
 		ros::spinOnce();
 		ros::Duration(1.0).sleep();
 	}
 	return 0;
-
-	/**
-	//create a "hand" point cloud to simulate hand placement
-
-	//have values of get_human_hand() checked when "hand" is present, and not
-	while(ros::ok()) {
-		//initial check to see that hand is not there
-		if(hmi.get_human_hand()) {
-			ROS_ERROR("HMI test has found a hand at startup, there should not be one.");
-		}
-
-		//activate hand presence
-
-		//check that hand is detected
-		if(!hmi.get_human_hand()) {
-			ROS_ERROR("HMI test has not found the simulated hand point cloud.");
-		}
-
-		//remove presence
-
-		//check that hand is gone
-		if(hmi.get_human_hand()) {
-			ROS_ERROR("HMI test is still detecting a hand after it has been removed.");
-		}
-	}
-	return 0;
-	**/
 }

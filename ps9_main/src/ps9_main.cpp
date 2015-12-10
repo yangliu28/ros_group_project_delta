@@ -19,23 +19,12 @@
 // for human hand detection in hmi
 #include <ps9_hmi/ps9_hmi_hand_detect.h>
 
-// const double z_offset = 0.275;
-// const double z_offset = 0.285;  // too high
-// const double z_offset = 0.280;  // too low
-
-// const double z_offset = 0.2;  // too high
-// const double z_offset = 0.15;  // a little high
-// const double z_offset = 0.12;  // almost
+//our magic number for height offset of yale gripper
 const double z_offset = 0.118;
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "ps9_main");
     ros::NodeHandle nh;
-
-
-
-
-    // INSTANTIATION OF CLASS FROM YOUR LIBRARIES
 
     // instantiate block detection object
     Block_detection block_detection(&nh);
@@ -43,54 +32,12 @@ int main(int argc, char** argv) {
     Gripper baxter_gripper_control(&nh);
     // instantiate an arm motion object
     ArmMotionCommander arm_motion_commander(&nh);
-    // instantiate an human hand detection object
+    // instantiate a human hand detection object
     HumanMachineInterface human_machine_interface(&nh);
 
-
-
-
-    // PREPARATION WORK FOR EACH LIBRARIES BEFORE THE LOOP
-
-    // preparation work for point cloud sensor
-    // // check if point cloud from kinect is active
-    // while (!point_cloud_sensor.got_kinect_cloud()) {
-    //     ROS_INFO("did not receive pointcloud");
-    //     ros::spinOnce();
-    //     ros::Duration(1.0).sleep();
-    // }
-    // ROS_INFO("got a pointcloud");
-
     // preparation work for yale gripper
-    // check if gripper is working by a grasp move
-    ROS_INFO("test the gripper state by close-open precedure");
-    // baxter_gripper_control.close_hand_w_torque();
+    // open hand for usage
     baxter_gripper_control.open_hand_w_position();
-    // ros::Duration(1.0).sleep();
-
-    // preparation work for arm motion commander
-    // tf::StampedTransform tf_sensor_frame_to_torso_frame;  // transform from sensor frame to torso frame
-    // tf::TransformListener tf_listener;  // start a transform listener
-    // // warm up the tf_listener
-    // bool tferr = true;
-    // ROS_INFO("waiting for tf between kinect_pc_frame and torso...");
-    // while (tferr) {
-    //     tferr = false;
-    //     try {
-    //         // The direction of the transform returned will be from the target_frame to the source_frame. 
-    //         // Which if applied to data, will transform data in the source_frame into the target_frame.
-    //         // See tf/CoordinateFrameConventions#Transform_Direction
-    //         tf_listener.lookupTransform("torso", "camera_rgb_optical_frame", ros::Time(0), tf_sensor_frame_to_torso_frame);
-    //     } catch (tf::TransformException &exception) {
-    //         ROS_ERROR("%s", exception.what());
-    //         tferr = true;
-    //         ros::Duration(0.5).sleep();  // sleep for half a second
-    //         ros::spinOnce();
-    //     }
-    // }
-    // ROS_INFO("tf is good");  // tf-listener found a complete chain from sensor to world
-
-
-
 
     // VARIABLES TO BE USED IN THE LOOP
 
@@ -167,16 +114,13 @@ int main(int argc, char** argv) {
             // human hand signal 2: not present
         // these signals indicate a permit of performing block detection and baxter movements
 
-        ROS_INFO("***** msg from HMI *****");
         b_human_hand_present = human_machine_interface.get_human_hand();
-        ROS_INFO("***** msg from HMI *****");
         while (!b_human_hand_present) {
             // wait for 0.5 second and re-check
             ros::Duration(0.5).sleep();
             ROS_INFO("***** msg from HMI *****");
             b_human_hand_present = human_machine_interface.get_human_hand();
-            ROS_INFO("***** msg from HMI *****");
-            ROS_INFO("waiting for human hand signal 1");
+            ROS_INFO("waiting for human hand");
         }
         // if here, get an human hand presence signal
         ROS_INFO("human hand signal 1 detected");
@@ -186,7 +130,7 @@ int main(int argc, char** argv) {
             ros::Duration(1.0).sleep();
             ROS_INFO("***** msg from HMI *****");
             b_human_hand_present = human_machine_interface.get_human_hand();
-            ROS_INFO("***** msg from HMI *****");
+            ROS_INFO("waiting for hand to be removed");
             time_count = time_count + 1;  // usually an human interaction is within 10 seconds
             // this will avoid program accidently waits here forever
         }
@@ -200,9 +144,6 @@ int main(int argc, char** argv) {
             ROS_ERROR("time out on human hand signal 2");
         }
 
-        // for debug of following movements
-        // b_continue_blocks_operation = true;
-
         // continue operation on blocks
         if (b_continue_blocks_operation) {
             ros::Duration(1.0).sleep();  // let people walk away
@@ -213,7 +154,8 @@ int main(int argc, char** argv) {
                 block_color = 0;
                 block_color = block_detection.find_block();  // get the color of the block
                 ROS_INFO_STREAM("block color code: " << block_color);
-                // if 0, no block is find
+
+                // if 0, no block is found
                 if (block_color) {
                     ROS_INFO("stool is found, block is found");
                     ROS_INFO_STREAM("color of the block: " << block_color << " (1-red, 2-green, 3-blue)");
@@ -228,15 +170,9 @@ int main(int argc, char** argv) {
                     ROS_INFO_STREAM("block orientation(w): " << block_pose.orientation.w);
                     // ROS_INFO_STREAM("block orientation: " << block_orientation);
 
-                    // prepare the general arm position for detected block, Affine_des_gripper
-                    // the orientation
-                    // Eigen::Vector3f block_axis = block_detection.get_major_axis_unit_vector();
-                    // yvec_des << block_axis[0], block_axis[1], 0;
-                    // xvec_des = zvec_des.cross(yvec_des);
-
+                    //setting rotations for gripper to be along block's major axis
                     xvec_des << cos(block_orientation), sin(block_orientation), 0;
                     yvec_des = zvec_des.cross(xvec_des);
-
 
                     Rmat.col(0) = xvec_des;
                     Rmat.col(1) = yvec_des;
@@ -360,12 +296,14 @@ int main(int argc, char** argv) {
                         ROS_WARN("Cartesian path to desired pose not achievable");
                     }
                 }
-                else
+                else {
                     ROS_WARN("stool is found, block is not found");
+                }
             }
-            else
+            else {
                 ROS_WARN("stool is not found");
-        ros::Duration(1.0).sleep();  // sleep 1 second each time    
+                ros::Duration(1.0).sleep();  // sleep 1 second each time
+            }    
         }
         ros::spinOnce();  // let variables to update, if there is any
     }

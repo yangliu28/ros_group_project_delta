@@ -28,6 +28,7 @@ void ArmMotionCommander::doneCb_(const actionlib::SimpleClientGoalState& state,
     cart_result_=*result;
 }
 
+//provides an Affine from a Pose for convenience in calculating and transferring values from different functions
 Eigen::Affine3d ArmMotionCommander::transformPoseToEigenAffine3d(geometry_msgs::Pose pose) {
     Eigen::Affine3d affine;
 
@@ -50,6 +51,7 @@ Eigen::Affine3d ArmMotionCommander::transformPoseToEigenAffine3d(geometry_msgs::
     return affine;
 }
 
+//caculates a Ros pose from an Affine, allowing use of other function's calculations with ease
 geometry_msgs::Pose ArmMotionCommander::transformEigenAffine3dToPose(Eigen::Affine3d e) {
     Eigen::Vector3d Oe;
     Eigen::Matrix3d Re;
@@ -70,7 +72,7 @@ geometry_msgs::Pose ArmMotionCommander::transformEigenAffine3dToPose(Eigen::Affi
     return pose;
 }
 
-
+//used to test that the arm motion commander is able to send goals for arm motion correctly
 void ArmMotionCommander::send_test_goal(void) {
     ROS_INFO("sending a test goal");
     cart_goal_.command_code = cwru_action::cwru_baxter_cart_moveGoal::ARM_TEST_MODE;
@@ -86,6 +88,8 @@ void ArmMotionCommander::send_test_goal(void) {
         }        
 }
 
+//gets the motion plan to move the arm to the pre pose
+//the pre pose acts as a starting position for each block pickup procedure
 int ArmMotionCommander::plan_move_to_pre_pose(void) {
     ROS_INFO("requesting a joint-space motion plan");
     cart_goal_.command_code = cwru_action::cwru_baxter_cart_moveGoal::RT_ARM_PLAN_JSPACE_PATH_CURRENT_TO_PRE_POSE;
@@ -145,6 +149,8 @@ int ArmMotionCommander::rt_arm_plan_jspace_path_current_to_qgoal(Eigen::VectorXd
     
 }
 
+//calculates the needed path for baxter's right arm to a goal position
+//the goal pose can be the upper, grabbing, or destination pose for a block pickup procedure
 int ArmMotionCommander::rt_arm_plan_path_current_to_goal_pose(geometry_msgs::PoseStamped des_pose) {
     
     ROS_INFO("requesting a cartesian-space motion plan");
@@ -175,6 +181,7 @@ int ArmMotionCommander::rt_arm_plan_path_current_to_goal_pose(geometry_msgs::Pos
     return (int) cart_result_.return_code;        
 }
 
+//gets the xyz displacement of the current path planned
 int ArmMotionCommander::rt_arm_plan_path_current_to_goal_dp_xyz(Eigen::Vector3d dp_displacement) {
     
     ROS_INFO("requesting a cartesian-space motion plan along vector");
@@ -207,7 +214,7 @@ int ArmMotionCommander::rt_arm_plan_path_current_to_goal_dp_xyz(Eigen::Vector3d 
     return (int) cart_result_.return_code;      
 }
     
-
+//requests the execution of a calculated arm path
 int ArmMotionCommander::rt_arm_execute_planned_path(void) {
     ROS_INFO("requesting execution of planned path");
     cart_goal_.command_code = cwru_action::cwru_baxter_cart_moveGoal::RT_ARM_EXECUTE_PLANNED_PATH;
@@ -247,6 +254,7 @@ int ArmMotionCommander::rt_arm_request_q_data(void) {
     return (int) cart_result_.return_code;
 }
 
+//receive right arm joint angles for internal usage
 Eigen::VectorXd ArmMotionCommander::get_right_arm_joint_angles(void) {
     rt_arm_request_q_data();
     Eigen::VectorXd rt_arm_angs_vecXd;
@@ -257,6 +265,7 @@ Eigen::VectorXd ArmMotionCommander::get_right_arm_joint_angles(void) {
     return rt_arm_angs_vecXd;
 }
 
+//used to check the yale hand pose
 int ArmMotionCommander::rt_arm_request_tool_pose_wrt_torso(void) {
     // debug: compare this to output of:
     //rosrun tf tf_echo torso yale_gripper_frame

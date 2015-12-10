@@ -1,4 +1,4 @@
-//this is the test to make sure it works
+//this is the test file to check the efficacy of the gripper library
 
 #include <ros/ros.h> 
 #include <ps9_gripper_control/ps9_gripper_control.h>
