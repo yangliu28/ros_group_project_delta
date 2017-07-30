@@ -1,5 +1,7 @@
 # ros_group_project_delta
-Group project repository of group delta for EECS 397/600
+Group project repository of group delta for EECS 397/600.
+
+[https://youtu.be/LCGIZH8sSNg](https://youtu.be/LCGIZH8sSNg)
 
 ## Group member and assignment
 Tao Liu: PCL w/ color, position orientation
